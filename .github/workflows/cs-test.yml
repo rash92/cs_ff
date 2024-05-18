@@ -20,4 +20,4 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: test_package
-      run: dotnet test -c Release cs
+      run: dotnet test -c Release
