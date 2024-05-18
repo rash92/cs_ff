@@ -3,12 +3,12 @@
 
 #except these specific files:
 !.gitignore
-!.editorconfig
-!dotnet.sln
 !LICENSE
-!README
+!README.md
 !CONTRIBUTOR_LICENSE_AGREEMENT.md
 !CONTRIBUTOR_README.md
+!.editorconfig
+!dotnet.sln
 
 #and the content of these specific directories:
 !/FF/
