@@ -9,6 +9,7 @@
 !CONTRIBUTOR_README.md
 !.editorconfig
 !dotnet.sln
+!Makefile
 
 #and the content of these specific directories:
 !/FF/
