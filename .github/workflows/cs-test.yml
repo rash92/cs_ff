@@ -1,0 +1,21 @@
+name: test
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: git_checkout
+      uses: actions/checkout@v4
+
+    - name: fetch_dotnet
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: test_package
+      run: dotnet test -c Release cs

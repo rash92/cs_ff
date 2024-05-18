@@ -1,0 +1,8 @@
+# gitignore everything:
+*
+
+# except yourself
+!.gitignore
+
+# and the content content of these specific directories:
+!/workflows/

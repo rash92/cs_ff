@@ -1,0 +1,14 @@
+# gitignore everything:
+*
+
+#except these specific files:
+!.gitignore
+!.editorconfig
+!snns.sln
+
+#and the content of these specific directories:
+!/FF/
+!/FF_Test/
+!/.github/
+#!/.github/workflows/
+#!/.github/workflows/cs-test.yml

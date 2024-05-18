@@ -1,0 +1,6 @@
+*
+!.gitignore
+!.editorconfig
+
+!FF_Test.csproj
+!*.cs

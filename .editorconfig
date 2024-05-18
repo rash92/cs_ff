@@ -1,0 +1,12 @@
+root = true
+
+[*.cs]
+# General
+indent_style = tab
+csharp_alignment_tab_fill_style = use_spaces
+
+csharp_indent_inside_namespace = false
+csharp_align_multiline_parameter = true
+csharp_wrap_parameters_style = chop_if_long
+csharp_align_multiline_argument = true
+csharp_wrap_arguments_style = chop_if_long
