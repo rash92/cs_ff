@@ -12,6 +12,9 @@ jobs:
     - name: git_checkout
       uses: actions/checkout@v4
 
+    - name: find_powershell
+      run: echo $(which pwsh)
+
     - name: fetch_dotnet
       uses: actions/setup-dotnet@v4
       with:
