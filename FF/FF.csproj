@@ -6,7 +6,7 @@
 		<AssemblyName>snns.ff</AssemblyName>
 		<RootNamespace>snns</RootNamespace>
 		<PackageId>snns.FF</PackageId>
-		<Authords>Søren Rune Nissen</Authords>
+		<Authors>SRNissen</Authors>
 		<Company>Unaffiliated</Company>
 	</PropertyGroup>
 
