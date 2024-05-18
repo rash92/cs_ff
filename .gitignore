@@ -4,7 +4,7 @@
 #except these specific files:
 !.gitignore
 !.editorconfig
-!snns.sln
+!dotnet.sln
 
 #and the content of these specific directories:
 !/FF/
