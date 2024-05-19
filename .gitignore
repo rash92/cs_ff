@@ -16,10 +16,11 @@
 !README.md
 
 ## Build system
-!Makefile
 !dotnet.sln
 !/Build/
 !/Build/*
+!/build/
+!/build/*
 
 ## The FF source
 !/FF/
