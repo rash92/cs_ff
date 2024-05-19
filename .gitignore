@@ -1,4 +1,4 @@
-# gitignore everything
+# ignore everything
 *
 
 # Except:
@@ -17,8 +17,8 @@
 
 ## Build system
 !dotnet.sln
-!/build/
-!/build/*
+!build_release.ps1
+!build_test.ps1
 
 ## The FF source
 !/FF/
