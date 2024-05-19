@@ -17,8 +17,6 @@
 
 ## Build system
 !dotnet.sln
-!/Build/
-!/Build/*
 !/build/
 !/build/*
 
