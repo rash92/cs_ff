@@ -17,8 +17,9 @@
 
 ## Build system
 !dotnet.sln
-!build_release.ps1
 !build_test.ps1
+!build_package.ps1
+!build_release.ps1
 
 ## The FF source
 !/FF/
