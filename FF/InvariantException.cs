@@ -5,9 +5,9 @@ using System.Text;
 
 namespace snns;
 
-public class FFException : Exception
+public class InvariantException : Exception
 {
-	public FFException(string memberName)
+	public InvariantException(string memberName)
 	{
 		Add(memberName);
 	}
