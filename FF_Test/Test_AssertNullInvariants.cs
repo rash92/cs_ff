@@ -237,5 +237,14 @@ public class TestObjects
 
 		Assert.That(leafCount, Is.EqualTo(4));
 	}
+
+	[Test]
+	public static void InvariantExceptionGathersNames()
+	{
+		var ie = new InvariantException("leaf");
+		ie.AddNameOfCurrentContext("branch");
+		ie.AddNameOfCurrentContext("trunk");
+		Assert.That(ie.Message, Is.EqualTo("Non-nullable reference trunk.branch.leaf is null."));
+	}
 }
 }
