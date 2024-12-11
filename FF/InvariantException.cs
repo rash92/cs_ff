@@ -50,7 +50,7 @@ public class InvariantException : Exception
 		return sb.ToString();
 	}
 
-	private const string PostFix = " is null.";
-	private readonly List<string> _names = new List<string>(1);
 	private const string Prefix = "Non-nullable reference ";
+	private readonly List<string> _names = new List<string>(1);
+	private const string PostFix = " is null.";
 }

@@ -5,14 +5,15 @@ namespace snns;
 
 public static partial class FF
 {
-	public static void AssertNullableInvariants<T>(T? t)
-	{ 
-		
-		NullableInvariantsDetails.Recurse(
-			t,
-			new NullableInvariantsDetails.Info(typeof(T).Name)
-		);
+	public static void AssertNullableInvariants<T>(in T t)
+	{
+		if (t == null)
+			throw new InvariantException(typeof(T).Name);
+		else
+			NullableInvariantsDetails.Recurse(t, new NullableInvariantsDetails.Info());
 	}
+
+
 
 	private static class NullableInvariantsDetails
 	{
