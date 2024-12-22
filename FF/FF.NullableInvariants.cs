@@ -1,5 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Collections;
+using System.Security.Authentication.ExtendedProtection;
 
 namespace snns;
 
@@ -26,7 +28,7 @@ public static partial class FF
 				}
 				else
 				{
-					throw new InvariantException(info.Name);
+					throw new InvariantException(info.Name, InvariantException.Reason.HasNullMember);
 				}
 			}
 
@@ -34,24 +36,48 @@ public static partial class FF
 			{
 				var type = obj.GetType();
 
-				var props = type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
-
-				foreach (var property in props)
-				{
-					if (property.GetIndexParameters().Length > 0) continue;
-					
-					var o = property.GetValue(obj);
-					var i = new Info(property);
-					AssertNullableInvariants(o, i);
-				}
-
 				var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public);
+				var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+				var hasIndexProperty = false;
+
 
 				foreach (var field in fields)
 				{
 					var o = field.GetValue(obj);
 					var i = new Info(field);
 					AssertNullableInvariants(o, i);
+				}
+
+				foreach (var property in properties)
+				{
+					if (property.GetIndexParameters().Length > 0)
+					{
+						hasIndexProperty = true;
+						continue;
+					}
+
+					var o = property.GetValue(obj);
+					var i = new Info(property);
+					AssertNullableInvariants(o, i);
+				}
+
+
+				if (!hasIndexProperty)
+				{
+					return;
+				}
+				else
+				{
+					var indexObj = (IEnumerable)obj;
+					if (indexObj == null)
+						throw new InvariantException(info.Name, InvariantException.Reason.HasNonEnumerableIndexParam);
+
+					foreach (var o in indexObj)
+					{
+						FF.AssertNullableInvariants(o); // <=== WAIT HOLD ON
+						// ^ If o is null, this throws - so what if indexObj is ienumerable<T?> rather than <T> ??
+						// TODO
+					}
 				}
 			}
 			catch (InvariantException e)

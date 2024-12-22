@@ -7,9 +7,16 @@ namespace snns;
 
 public class InvariantException : Exception
 {
-	public InvariantException(string memberName)
+	public enum Reason
+	{
+		HasNullMember,
+		HasNonEnumerableIndexParam
+	}
+	
+	public InvariantException(string memberName, Reason reason)
 	{
 		Add(memberName);
+		_reason = reason;
 	}
 
 	public void AddNameOfCurrentContext(string memberName)
@@ -26,13 +33,17 @@ public class InvariantException : Exception
 
 	private string ConCat()
 	{
-		var sb = new StringBuilder(PostFix.Length +
-		                           Prefix.Length +
+		var (prefix, postfix) = _reason == Reason.HasNullMember
+			? (NullPrefix, NullPostfix)
+			: (IndexPrefix, IndexPostfix);
+		
+		var sb = new StringBuilder(prefix.Length +
+		                           postfix.Length +
 		                           _names.Sum(n => n.Length) +
 		                           _names.Count -
 		                           1); //fencepost - period between each name, 3 names => 2 periods
 
-		sb.Append(Prefix);
+		sb.Append(NullPrefix);
 
 		// pure garbage loop but we need to add names in reverse while adding periods but only in between.
 		sb.Append(_names.Last());
@@ -45,12 +56,15 @@ public class InvariantException : Exception
 		// that but then it wouldn't know about the pre/postfix OR it would also concat those with periods in
 		// between which is ALSO not what we want.
 
-		sb.Append(PostFix);
+		sb.Append(NullPostfix);
 		
 		return sb.ToString();
 	}
 
-	private const string Prefix = "Non-nullable reference ";
+	private const string NullPrefix = "Non-nullable reference ";
+	private const string NullPostfix = " is null.";
+	private const string IndexPrefix = "Index property ";
+	private const string IndexPostfix = " cannot be enumerated.";
 	private readonly List<string> _names = new List<string>(1);
-	private const string PostFix = " is null.";
+	private Reason _reason;
 }
