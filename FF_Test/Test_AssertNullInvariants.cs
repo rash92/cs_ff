@@ -1,4 +1,6 @@
 using System;
+using System.Net.WebSockets;
+using NUnit.Framework.Internal;
 using snns;
 
 namespace Test_AssertNullInvariants
@@ -52,6 +54,12 @@ public class OuterObject
 			FF.AssertNullableInvariants(i);
 		});
 	}
+
+	[Test]
+	public static void IsNull()
+	{
+		Assert.Throws<InvariantException>(() => { FF.AssertNullableInvariants((object)null!); });
+	}
 }
 
 public class Required_members_are_NOT_SET_and
@@ -80,8 +88,98 @@ public class Required_members_are_NOT_SET_and
 }
 }
 
+namespace FieldsAndProperties
+{
+public class Do_NOT_throw
+{
+	[Test]
+	public void just_because_object_has_an_index_property()
+	{
+		var l = new List<int?>();
+		l.Add(1);
+		l.Add(null);
+		
+		Assert.DoesNotThrow(()=>FF.AssertNullableInvariants(l));
+	}
+
+	[Test]
+	public void AdHocTest()
+	{
+		var optionalList = new List<string?>();
+		var mandatoryList = new List<TestObjects.Leaf>();
+		
+		var str = "this is a string";
+
+		var t = (optionalList,mandatoryList, str);
+		t.optionalList.Add(null);
+		t.optionalList.Add("this is a string");
+		t.mandatoryList.Add(new TestObjects.Leaf());
+		t.mandatoryList.Add(new TestObjects.Leaf());
+		t.mandatoryList.Add(new TestObjects.Leaf());
+		t.mandatoryList[1] = null!;
+		
+		FF.AssertNullableInvariants(t);
+	}
+}
+
+public class Do_NOT_throw_when_all_required_are_set_and
+{
+	[Test]
+	public void optional_field_and_optional_property_is_set()
+	{
+		var b = TestObjects.Bush.FullyGrown();
+		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(b));
+	}
+
+	[Test]
+	public void optional_field_is_set()
+	{
+		var b = TestObjects.Bush.FullyGrown();
+		b.OptionalProperty = null;
+		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(b));
+	}
+
+	[Test]
+	public void optional_property_is_set()
+	{
+		var b = TestObjects.Bush.FullyGrown();
+		b.OptionalField = null;
+		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(b));
+	}
+}
+
+public class DO_THROW_When
+{
+	[Test]
+	public void Required_property_is_not_set()
+	{
+		var b = TestObjects.Bush.FullyGrown();
+		b.RequiredProperty = null!;
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(b));
+	}
+
+	[Test]
+	public void Required_field_is_not_set()
+	{
+		var b = TestObjects.Bush.FullyGrown();
+		b.RequiredField = null!;
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(b));
+	}
+}
+}
+
 public class TestObjects
 {
+	public class Bush
+	{
+		public Leaf RequiredProperty { get; set; } = new();
+		public Leaf? OptionalProperty { get; set; } = new();
+		public Leaf RequiredField = new();
+		public Leaf? OptionalField = new();
+
+		public static Bush FullyGrown() => new Bush();
+	}
+
 	public class Leaf
 	{
 	}
@@ -125,7 +223,6 @@ public class TestObjects
 		public Branch ReqPrp { get; set; } = null!;
 		public Branch? OptFld = null;
 		public Branch ReqFld = null!;
-		
 
 
 		public static Tree FullyGrown()
