@@ -1,8 +1,4 @@
-using System;
 using System.Linq;
-using System.Net.Sockets;
-using System.Net.WebSockets;
-using NUnit.Framework.Internal;
 using snns;
 
 namespace Test_AssertNullInvariants
@@ -91,86 +87,86 @@ public class RecursionAndEnumeration
 		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(w));
 	}
 
-	public class Nightmare
+	public class RecursiveEnumerativeSpaghetti
 	{
-		public List<Nightmare>? List { get; set; }
+		public List<RecursiveEnumerativeSpaghetti>? List { get; set; }
 		public string String { get; set; } = "required";
 	}
 
-	public Nightmare CreateNightmare(bool breakInvariant = false)
+	public RecursiveEnumerativeSpaghetti CookSpaghetti(bool breakInvariant = false)
 	{
-		var nightmare1 = new Nightmare();
-		nightmare1.List = new();
+		var spaghetti1 = new RecursiveEnumerativeSpaghetti();
+		spaghetti1.List = new();
 
-		var nightmare2 = new Nightmare();
-		nightmare2.List = new();
+		var spaghetti2 = new RecursiveEnumerativeSpaghetti();
+		spaghetti2.List = new();
 
-		nightmare1.List.Add(nightmare2);
-		nightmare2.List.Add(nightmare1);
+		spaghetti1.List.Add(spaghetti2);
+		spaghetti2.List.Add(spaghetti1);
 
 		foreach (var i in Enumerable.Range(0, 100))
 		{
-			var n1a = new Nightmare { List = [] };
-			var n1b = new Nightmare { List = [] };
-			var n2a = new Nightmare { List = [] };
-			var n2b = new Nightmare { List = [] };
+			var s1a = new RecursiveEnumerativeSpaghetti { List = [] };
+			var s1b = new RecursiveEnumerativeSpaghetti { List = [] };
+			var s2a = new RecursiveEnumerativeSpaghetti { List = [] };
+			var s2b = new RecursiveEnumerativeSpaghetti { List = [] };
 
-			n1a.List.Add(n1a);
-			n1a.List.Add(n1b);
-			n1a.List.Add(n2a);
-			n1a.List.Add(n2b);
-			n1a.List.Add(nightmare1.List.First());
-			n1a.List.Add(nightmare1.List.Last());
-			n1a.List.Add(nightmare2.List.First());
-			n1a.List.Add(nightmare2.List.Last());
-			nightmare1.List.Add(n1a);
-			nightmare2.List.Add(n1a);
+			s1a.List.Add(s1a);
+			s1a.List.Add(s1b);
+			s1a.List.Add(s2a);
+			s1a.List.Add(s2b);
+			s1a.List.Add(spaghetti1.List.First());
+			s1a.List.Add(spaghetti1.List.Last());
+			s1a.List.Add(spaghetti2.List.First());
+			s1a.List.Add(spaghetti2.List.Last());
+			spaghetti1.List.Add(s1a);
+			spaghetti2.List.Add(s1a);
 
-			n1b.List.Add(n1a);
-			n1b.List.Add(n1b);
-			n1b.List.Add(n2a);
-			n1b.List.Add(n2b);
-			n1b.List.Add(nightmare1.List.First());
-			n1b.List.Add(nightmare1.List.Last());
-			n1b.List.Add(nightmare2.List.First());
-			n1b.List.Add(nightmare2.List.Last());
-			nightmare1.List.Add(n1b);
-			nightmare2.List.Add(n1b);
+			s1b.List.Add(s1a);
+			s1b.List.Add(s1b);
+			s1b.List.Add(s2a);
+			s1b.List.Add(s2b);
+			s1b.List.Add(spaghetti1.List.First());
+			s1b.List.Add(spaghetti1.List.Last());
+			s1b.List.Add(spaghetti2.List.First());
+			s1b.List.Add(spaghetti2.List.Last());
+			spaghetti1.List.Add(s1b);
+			spaghetti2.List.Add(s1b);
 
-			n2a.List.Add(n1a);
-			n2a.List.Add(n1b);
-			n2a.List.Add(n2a);
-			n2a.List.Add(n2b);
-			n2a.List.Add(nightmare1.List.First());
-			n2a.List.Add(nightmare1.List.Last());
-			n2a.List.Add(nightmare2.List.First());
-			n2a.List.Add(nightmare2.List.Last());
-			nightmare1.List.Add(n2a);
-			nightmare2.List.Add(n2a);
+			s2a.List.Add(s1a);
+			s2a.List.Add(s1b);
+			s2a.List.Add(s2a);
+			s2a.List.Add(s2b);
+			s2a.List.Add(spaghetti1.List.First());
+			s2a.List.Add(spaghetti1.List.Last());
+			s2a.List.Add(spaghetti2.List.First());
+			s2a.List.Add(spaghetti2.List.Last());
+			spaghetti1.List.Add(s2a);
+			spaghetti2.List.Add(s2a);
 
-			n2b.List.Add(n1a);
-			n2b.List.Add(n1b);
-			n2b.List.Add(n2a);
-			n2b.List.Add(n2b);
-			n2b.List.Add(nightmare1.List.First());
-			n2b.List.Add(nightmare1.List.Last());
-			n2b.List.Add(nightmare2.List.First());
-			n2b.List.Add(nightmare2.List.Last());
-			nightmare1.List.Add(n2b);
-			nightmare2.List.Add(n2b);
+			s2b.List.Add(s1a);
+			s2b.List.Add(s1b);
+			s2b.List.Add(s2a);
+			s2b.List.Add(s2b);
+			s2b.List.Add(spaghetti1.List.First());
+			s2b.List.Add(spaghetti1.List.Last());
+			s2b.List.Add(spaghetti2.List.First());
+			s2b.List.Add(spaghetti2.List.Last());
+			spaghetti1.List.Add(s2b);
+			spaghetti2.List.Add(s2b);
 
 			if (i == 50 && breakInvariant)
 			{
-				n2b.String = null!;
+				s2b.String = null!;
 			}
 		}
 
-		var outerNightmare = new Nightmare()
+		var evenMoreSpaghetti = new RecursiveEnumerativeSpaghetti
 		{
-			List = [nightmare1, nightmare2]
+			List = [spaghetti1, spaghetti2]
 		};
 
-		return outerNightmare;
+		return evenMoreSpaghetti;
 	}
 
 	private const int ZeroRecursion = 0;
@@ -181,20 +177,20 @@ public class RecursionAndEnumeration
 	private const bool KeepsInvariants = false;
 
 	[Test]
-	public void RecursiveEnumerativeSpaghetti()
+	public void CheckInvariantsInRecursiveEnumerativeSpaghetti()
 	{
-		var n = CreateNightmare(BreakInvariants);
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, ZeroRecursion, ZeroEnumeration));
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, ZeroRecursion, FreeEnumeration));
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, FreeRecursion, ZeroEnumeration));
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, FreeRecursion, FreeEnumeration));
+		var spaghetti = CookSpaghetti(BreakInvariants);
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, ZeroRecursion, ZeroEnumeration));
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, ZeroRecursion, FreeEnumeration));
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, FreeRecursion, ZeroEnumeration));
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, FreeRecursion, FreeEnumeration));
 
-		n = CreateNightmare(KeepsInvariants);
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, ZeroRecursion, ZeroEnumeration));
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, ZeroRecursion, FreeEnumeration));
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, FreeRecursion, ZeroEnumeration));
+		spaghetti = CookSpaghetti(KeepsInvariants);
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, ZeroRecursion, ZeroEnumeration));
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, ZeroRecursion, FreeEnumeration));
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, FreeRecursion, ZeroEnumeration));
 
-		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(n, FreeRecursion, FreeEnumeration));
+		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(spaghetti, FreeRecursion, FreeEnumeration));
 	}
 }
 
