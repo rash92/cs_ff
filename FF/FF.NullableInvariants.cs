@@ -1,38 +1,55 @@
 using System.Collections;
 using System.Reflection;
+using System.Runtime.InteropServices.JavaScript;
 using System.Security.Cryptography;
 
 namespace snns;
 
 public static partial class FF
 {
-	public static void AssertNullableInvariants<TInput>(in TInput input, uint recursionLimit = 1000)
+	public static void AssertNullableInvariants<TInput>(
+		in TInput input,
+		int recursionLimit = 1000,
+		long enumerationLimit = long.MaxValue)
 	{
-		var info = new NullableInvariantsDetails.Info
+		var info = new NullableInvariantsImpl.Info
 		{
 			Name = typeof(TInput).Name,
-			Nullability = NullableInvariantsDetails.Nullability.NotAllowed,
+			Nullability = NullableInvariantsImpl.Nullability.NotAllowed,
 			PropertyInfo = null,
 			FieldInfo = null,
 			IsIndexProperty = false,
 		};
 
-		NullableInvariantsDetails.AssertNullableInvariants(input, info, recursionLimit);
+		var impl = new NullableInvariantsImpl();
+		impl.AssertNullableInvariants(input, info, recursionLimit, enumerationLimit);
 	}
 
 
-	private static class NullableInvariantsDetails
+	private readonly struct NullableInvariantsImpl()
 	{
-		public static void AssertNullableInvariants(in object? input, Info info, uint recursionLimit)
+		private readonly List<object> _visited = [];
+
+		public void AssertNullableInvariants(
+			object? input,
+			Info info,
+			int recursionLimit,
+			long enumerationLimit)
 		{
 			try
 			{
-				switch (input, info.Nullability, recursionLimit)
+				switch (input, info.Nullability, recursionLimit < 0, enumerationLimit < 0)
 				{
-					case (null, Nullability.Allowed, _): return;
-					case (null, _, _): throw new InvariantException(InvariantException.Reason.IllegalNullable);
-					case (_, _, 0): throw new InvariantException(InvariantException.Reason.RecursionLimit);
+					case (null, Nullability.Allowed, _, _): return;
+					case (null, _, _, _): throw new InvariantException(InvariantException.Reason.IllegalNullable);
+					case (_, _, true, _): throw new InvariantException(InvariantException.Reason.RecursionLimit);
+					case (_, _, _, true): throw new InvariantException(InvariantException.Reason.EnumerationLimit);
 				}
+
+				if (_visited.Any(o => ReferenceEquals(o, input)))
+					return;
+				else
+					_visited.Add(input);
 
 				var memberTypeInfos = CreateTypeInfoFor(input);
 
@@ -41,13 +58,14 @@ public static partial class FF
 					if (!typeInfo.IsIndexProperty)
 					{
 						var typeValue = typeInfo.GetValue(input);
-						AssertNullableInvariants(typeValue, typeInfo, recursionLimit - 1);
+						AssertNullableInvariants(typeValue, typeInfo, recursionLimit - 1, enumerationLimit);
 					}
 					else if (input is IEnumerable ie)
 					{
 						foreach (var e in ie)
 						{
-							AssertNullableInvariants(e, typeInfo, recursionLimit - 1);
+							enumerationLimit--;
+							AssertNullableInvariants(e, typeInfo, recursionLimit, enumerationLimit);
 						}
 					}
 				}
@@ -57,6 +75,8 @@ public static partial class FF
 				e.PushNameOfCurrentContext(info.Name);
 				throw;
 			}
+
+			return;
 		}
 
 

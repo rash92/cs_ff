@@ -14,6 +14,7 @@ public class InvariantException : Exception
 		{
 			Reason.IllegalNullable => NullTemplate,
 			Reason.RecursionLimit => RecursionTemplate,
+			Reason.EnumerationLimit => EnumerationTemplate,
 			_ => DefaultMessage
 		};
 	}
@@ -22,13 +23,14 @@ public class InvariantException : Exception
 	{
 		RecursionLimit,
 		IllegalNullable,
+		EnumerationLimit
 	}
 
 	public override string Message => BuildMessage();
 
 	public void PushNameOfCurrentContext(string memberName)
 	{
-		_nameElements.Add(string.IsNullOrWhiteSpace(memberName) ? "__Anonymous__" : memberName);
+		_newNames.Add(string.IsNullOrWhiteSpace(memberName) ? "__Anonymous__" : memberName);
 		_message = null;
 	}
 
@@ -39,36 +41,36 @@ public class InvariantException : Exception
 			return _message;
 		}
 
-		var name = (_nameElements.Count, _existingName) switch
+		var name = (_newNames.Count, _existingNames) switch
 		{
-			(1, null) => _nameElements.Single(),
+			(1, null) => _newNames.Single(),
 			(_, null) => ConcatNameElements(),
-			(1, _) => string.Format(ConcatTemplate, _nameElements.Single(), _existingName),
-			(_, _) => string.Format(ConcatTemplate, ConcatNameElements(), _existingName)
+			(1, _) => string.Format(ConcatTemplate, _newNames.Single(), _existingNames),
+			(_, _) => string.Format(ConcatTemplate, ConcatNameElements(), _existingNames)
 		};
 
 		var message = string.Format(_template, name);
 
-		_existingName = name;
+		_existingNames = name;
 		_message = message;
-		_nameElements.Clear();
+		_newNames.Clear();
 		return _message;
 	}
 
 	private string ConcatNameElements()
 	{
-		if (_nameElements.Count == 1)
+		if (_newNames.Count == 1)
 		{
-			return _nameElements.Single();
+			return _newNames.Single();
 		}
 
-		var sb = new StringBuilder(_nameElements.Count + _nameElements.Sum(s => s.Length));
-		foreach (var s in _nameElements.AsEnumerable().Reverse().Take(_nameElements.Count - 1))
+		var sb = new StringBuilder(_newNames.Count + _newNames.Sum(s => s.Length));
+		foreach (var s in _newNames.AsEnumerable().Reverse().Take(_newNames.Count - 1))
 		{
 			sb.Append(s).Append('.');
 		}
 
-		sb.Append(_nameElements.FirstOrDefault(""));
+		sb.Append(_newNames.FirstOrDefault(""));
 
 		return sb.ToString();
 	}
@@ -78,9 +80,10 @@ public class InvariantException : Exception
 
 	private const string NullTemplate = "Non-nullable reference {0} is null";
 	private const string RecursionTemplate = "Recursion limit reached in {0}";
+	private const string EnumerationTemplate = "Enumeration limit reached in {0}";
 	private readonly string _template;
 
 	private const string ConcatTemplate = "{0}.{1}";
-	private readonly List<string> _nameElements = [];
-	private string? _existingName;
+	private readonly List<string> _newNames = [];
+	private string? _existingNames;
 }

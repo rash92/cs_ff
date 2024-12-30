@@ -1,10 +1,204 @@
 using System;
+using System.Linq;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using NUnit.Framework.Internal;
 using snns;
 
 namespace Test_AssertNullInvariants
 {
+public class RecursionAndEnumeration
+{
+	public enum Behavior
+	{
+		Throws,
+		DoesNotThrow
+	}
+
+	[Test]
+	// empty collections never over-enumerate
+	[TestCase(0, 0, Behavior.DoesNotThrow)]
+	[TestCase(0, 1, Behavior.DoesNotThrow)]
+	[TestCase(0, long.MaxValue, Behavior.DoesNotThrow)]
+	// fencepost error near 1 item
+	[TestCase(1, 0, Behavior.Throws)]
+	[TestCase(1, 1, Behavior.DoesNotThrow)]
+	[TestCase(1, 2, Behavior.DoesNotThrow)]
+	[TestCase(1, long.MaxValue, Behavior.DoesNotThrow)]
+	// general case
+	[TestCase(100, 0, Behavior.Throws)]
+	[TestCase(100, 1, Behavior.Throws)]
+	[TestCase(100, 99, Behavior.Throws)]
+	[TestCase(100, 100, Behavior.DoesNotThrow)]
+	[TestCase(100, 101, Behavior.DoesNotThrow)]
+	[TestCase(100, long.MaxValue, Behavior.DoesNotThrow)]
+	public void ThrowsIfCollectionHasMoreItemsThanEnumerationLimit(int items, long enumerationLimit, Behavior behavior)
+	{
+		var collection = Enumerable.Range(0, items);
+
+		switch (behavior)
+		{
+			case Behavior.Throws:
+				Assert.Throws<InvariantException>(
+					() => FF.AssertNullableInvariants(collection, enumerationLimit: enumerationLimit));
+				break;
+			case Behavior.DoesNotThrow:
+				Assert.DoesNotThrow(
+					() => FF.AssertNullableInvariants(collection, enumerationLimit: enumerationLimit));
+				break;
+			default:
+				Assert.Fail();
+				break;
+		}
+	}
+
+	public class Wrapper
+	{
+		public Wrapper? W { get; set; }
+	}
+
+	[Test]
+	public void ThrowsIfObjectHasMoreLinksThanTheRecursionLimit()
+	{
+		Wrapper w = new Wrapper();
+
+		for (var i = 0; i < 5; i++)
+		{
+			var wrap = new Wrapper();
+			wrap.W = w;
+			w = wrap;
+		}
+
+		Assert.NotNull( /**/ w.W);
+		Assert.NotNull( /**/ w.W!.W);
+		Assert.NotNull( /**/ w.W!.W!.W);
+		Assert.NotNull( /**/ w.W!.W!.W!.W);
+		Assert.NotNull( /**/ w.W!.W!.W!.W!.W);
+		Assert.Null( /*****/ w.W!.W!.W!.W!.W!.W);
+
+		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(w));
+
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(w, recursionLimit: 1));
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(w, recursionLimit: 2));
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(w, recursionLimit: 3));
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(w, recursionLimit: 4));
+		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(w, recursionLimit: 5));
+		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(w, recursionLimit: 6));
+
+		// create a cyclic graph
+		w.W = w;
+
+		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(w));
+	}
+
+	public class Nightmare
+	{
+		public List<Nightmare>? List { get; set; }
+		public string String { get; set; } = "required";
+	}
+
+	public Nightmare CreateNightmare(bool breakInvariant = false)
+	{
+		var nightmare1 = new Nightmare();
+		nightmare1.List = new();
+
+		var nightmare2 = new Nightmare();
+		nightmare2.List = new();
+
+		nightmare1.List.Add(nightmare2);
+		nightmare2.List.Add(nightmare1);
+
+		foreach (var i in Enumerable.Range(0, 100))
+		{
+			var n1a = new Nightmare { List = [] };
+			var n1b = new Nightmare { List = [] };
+			var n2a = new Nightmare { List = [] };
+			var n2b = new Nightmare { List = [] };
+
+			n1a.List.Add(n1a);
+			n1a.List.Add(n1b);
+			n1a.List.Add(n2a);
+			n1a.List.Add(n2b);
+			n1a.List.Add(nightmare1.List.First());
+			n1a.List.Add(nightmare1.List.Last());
+			n1a.List.Add(nightmare2.List.First());
+			n1a.List.Add(nightmare2.List.Last());
+			nightmare1.List.Add(n1a);
+			nightmare2.List.Add(n1a);
+
+			n1b.List.Add(n1a);
+			n1b.List.Add(n1b);
+			n1b.List.Add(n2a);
+			n1b.List.Add(n2b);
+			n1b.List.Add(nightmare1.List.First());
+			n1b.List.Add(nightmare1.List.Last());
+			n1b.List.Add(nightmare2.List.First());
+			n1b.List.Add(nightmare2.List.Last());
+			nightmare1.List.Add(n1b);
+			nightmare2.List.Add(n1b);
+
+			n2a.List.Add(n1a);
+			n2a.List.Add(n1b);
+			n2a.List.Add(n2a);
+			n2a.List.Add(n2b);
+			n2a.List.Add(nightmare1.List.First());
+			n2a.List.Add(nightmare1.List.Last());
+			n2a.List.Add(nightmare2.List.First());
+			n2a.List.Add(nightmare2.List.Last());
+			nightmare1.List.Add(n2a);
+			nightmare2.List.Add(n2a);
+
+			n2b.List.Add(n1a);
+			n2b.List.Add(n1b);
+			n2b.List.Add(n2a);
+			n2b.List.Add(n2b);
+			n2b.List.Add(nightmare1.List.First());
+			n2b.List.Add(nightmare1.List.Last());
+			n2b.List.Add(nightmare2.List.First());
+			n2b.List.Add(nightmare2.List.Last());
+			nightmare1.List.Add(n2b);
+			nightmare2.List.Add(n2b);
+
+			if (i == 50 && breakInvariant)
+			{
+				n2b.String = null!;
+			}
+		}
+
+		var outerNightmare = new Nightmare()
+		{
+			List = [nightmare1, nightmare2]
+		};
+
+		return outerNightmare;
+	}
+
+	private const int ZeroRecursion = 0;
+	private const int FreeRecursion = int.MaxValue;
+	private const long ZeroEnumeration = 0;
+	private const long FreeEnumeration = long.MaxValue;
+	private const bool BreakInvariants = true;
+	private const bool KeepsInvariants = false;
+
+	[Test]
+	public void RecursiveEnumerativeSpaghetti()
+	{
+		var n = CreateNightmare(BreakInvariants);
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, ZeroRecursion, ZeroEnumeration));
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, ZeroRecursion, FreeEnumeration));
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, FreeRecursion, ZeroEnumeration));
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, FreeRecursion, FreeEnumeration));
+
+		n = CreateNightmare(KeepsInvariants);
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, ZeroRecursion, ZeroEnumeration));
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, ZeroRecursion, FreeEnumeration));
+		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(n, FreeRecursion, ZeroEnumeration));
+
+		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(n, FreeRecursion, FreeEnumeration));
+	}
+}
+
+
 namespace DO_NOT_THROW_When
 {
 public class Required_members_ARE_SET_and
