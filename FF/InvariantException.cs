@@ -7,6 +7,23 @@ namespace snns;
 
 public class InvariantException : Exception
 {
+	// ReSharper disable once ConvertToPrimaryConstructor
+	public InvariantException(Reason reason)
+	{
+		_template = reason switch
+		{
+			Reason.IllegalNullable => NullTemplate,
+			Reason.RecursionLimit => RecursionTemplate,
+			_ => DefaultMessage
+		};
+	}
+
+	public enum Reason
+	{
+		RecursionLimit,
+		IllegalNullable,
+	}
+
 	public override string Message => BuildMessage();
 
 	public void PushNameOfCurrentContext(string memberName)
@@ -56,11 +73,12 @@ public class InvariantException : Exception
 		return sb.ToString();
 	}
 
-	private const string DefaultMessage = "Non-nullable reference is null";
+	private const string DefaultMessage = "Unspecified invariant error {0}";
 	private string? _message = DefaultMessage;
 
 	private const string NullTemplate = "Non-nullable reference {0} is null";
-	private string _template = NullTemplate;
+	private const string RecursionTemplate = "Recursion limit reached in {0}";
+	private readonly string _template;
 
 	private const string ConcatTemplate = "{0}.{1}";
 	private readonly List<string> _nameElements = [];

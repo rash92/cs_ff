@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Reflection;
+using System.Security.Cryptography;
 
 namespace snns;
 
 public static partial class FF
 {
-	public static void AssertNullableInvariants<TInput>(in TInput input)
+	public static void AssertNullableInvariants<TInput>(in TInput input, uint recursionLimit = 1000)
 	{
 		var info = new NullableInvariantsDetails.Info
 		{
@@ -16,26 +17,21 @@ public static partial class FF
 			IsIndexProperty = false,
 		};
 
-		NullableInvariantsDetails.AssertNullableInvariants(input, info);
+		NullableInvariantsDetails.AssertNullableInvariants(input, info, recursionLimit);
 	}
 
 
 	private static class NullableInvariantsDetails
 	{
-		public static void AssertNullableInvariants(in object? input, Info info)
+		public static void AssertNullableInvariants(in object? input, Info info, uint recursionLimit)
 		{
 			try
 			{
-				if (input == null)
+				switch (input, info.Nullability, recursionLimit)
 				{
-					if (info.Nullability == Nullability.Allowed)
-					{
-						return;
-					}
-					else
-					{
-						throw new InvariantException();
-					}
+					case (null, Nullability.Allowed, _): return;
+					case (null, _, _): throw new InvariantException(InvariantException.Reason.IllegalNullable);
+					case (_, _, 0): throw new InvariantException(InvariantException.Reason.RecursionLimit);
 				}
 
 				var memberTypeInfos = CreateTypeInfoFor(input);
@@ -45,13 +41,13 @@ public static partial class FF
 					if (!typeInfo.IsIndexProperty)
 					{
 						var typeValue = typeInfo.GetValue(input);
-						AssertNullableInvariants(typeValue, typeInfo);
+						AssertNullableInvariants(typeValue, typeInfo, recursionLimit - 1);
 					}
 					else if (input is IEnumerable ie)
 					{
 						foreach (var e in ie)
 						{
-							AssertNullableInvariants(e, typeInfo);
+							AssertNullableInvariants(e, typeInfo, recursionLimit - 1);
 						}
 					}
 				}
