@@ -10,7 +10,7 @@ public static partial class FF
 		var info = new NullableInvariantsDetails.Info
 		{
 			Name = typeof(TInput).Name,
-			IsNullable = false,
+			Nullability = NullableInvariantsDetails.Nullability.NotAllowed,
 			PropertyInfo = null,
 			FieldInfo = null,
 			IsIndexProperty = false,
@@ -28,7 +28,7 @@ public static partial class FF
 			{
 				if (input == null)
 				{
-					if (info.IsNullable)
+					if (info.Nullability == Nullability.Allowed)
 					{
 						return;
 					}
@@ -38,20 +38,20 @@ public static partial class FF
 					}
 				}
 
-				var memberTypes = CreateTypeInfoFor(input);
+				var memberTypeInfos = CreateTypeInfoFor(input);
 
-				foreach (var type in memberTypes)
+				foreach (var typeInfo in memberTypeInfos)
 				{
-					if (!type.IsIndexProperty)
+					if (!typeInfo.IsIndexProperty)
 					{
-						var memberValue = type.GetValue(input);
-						AssertNullableInvariants(memberValue, type);
+						var typeValue = typeInfo.GetValue(input);
+						AssertNullableInvariants(typeValue, typeInfo);
 					}
 					else if (input is IEnumerable ie)
 					{
 						foreach (var e in ie)
 						{
-							AssertNullableInvariants(e, type);
+							AssertNullableInvariants(e, typeInfo);
 						}
 					}
 				}
@@ -66,11 +66,11 @@ public static partial class FF
 
 		#region info
 
-		private const BindingFlags ReflectionFlags = BindingFlags.Public |
-		                                             //BindingFlags.NonPublic |
-		                                             BindingFlags.Instance;
+		private const BindingFlags ReflectionFlags =
+			BindingFlags.Public |
+			BindingFlags.Instance;
 
-		public static List<Info> CreateTypeInfoFor(in object obj)
+		private static List<Info> CreateTypeInfoFor(in object obj)
 		{
 			var l = new List<Info>();
 			var t = obj.GetType();
@@ -81,12 +81,18 @@ public static partial class FF
 			return l;
 		}
 
+		public enum Nullability
+		{
+			Allowed,
+			NotAllowed,
+		}
+
 		public readonly struct Info
 		{
 			public required string Name { get; init; }
 			public required PropertyInfo? PropertyInfo { get; init; }
 			public required FieldInfo? FieldInfo { get; init; }
-			public required bool IsNullable { get; init; }
+			public required Nullability Nullability { get; init; }
 
 			public required bool IsIndexProperty { get; init; }
 			public bool IsField => FieldInfo != null;
@@ -111,7 +117,7 @@ public static partial class FF
 				Name = fieldInfo.Name,
 				PropertyInfo = null,
 				FieldInfo = fieldInfo,
-				IsNullable = ReadStateIsNullable(fieldInfo),
+				Nullability = ReadStateIsNullable(fieldInfo),
 				IsIndexProperty = false,
 			};
 		}
@@ -123,7 +129,7 @@ public static partial class FF
 				Name = propertyInfo.Name,
 				PropertyInfo = propertyInfo,
 				FieldInfo = null,
-				IsNullable = ReadStateIsNullable(propertyInfo),
+				Nullability = ReadStateIsNullable(propertyInfo),
 				IsIndexProperty = MemberIsIndexer(propertyInfo),
 			};
 		}
@@ -134,17 +140,22 @@ public static partial class FF
 
 		private static readonly NullabilityInfoContext NullabilityInfo = new();
 
-		private static bool ReadStateIsNullable(FieldInfo fieldInfo)
+		private static Nullability ReadStateIsNullable(FieldInfo fieldInfo)
 		{
-			var ni = NullabilityInfo.Create(fieldInfo);
-			return ni.ReadState == NullabilityState.Nullable;
+			return NullabilityInfo.Create(fieldInfo).ReadState switch
+			{
+				NullabilityState.Nullable => Nullability.Allowed,
+				_ => Nullability.NotAllowed,
+			};
 		}
 
-		private static bool ReadStateIsNullable(PropertyInfo propertyInfo)
+		private static Nullability ReadStateIsNullable(PropertyInfo propertyInfo)
 		{
-			var ni = NullabilityInfo.Create(propertyInfo);
-			;
-			return ni.ReadState == NullabilityState.Nullable;
+			return NullabilityInfo.Create(propertyInfo).ReadState switch
+			{
+				NullabilityState.Nullable => Nullability.Allowed,
+				_ => Nullability.NotAllowed,
+			};
 		}
 
 		private static bool MemberIsIndexer(PropertyInfo propertyInfo)
