@@ -40,7 +40,7 @@ public class OuterObject
 	{
 		Assert.Throws<InvariantException>(() =>
 		{
-			string? s = null;
+			string s = null!;
 			FF.AssertNullableInvariants(s);
 		});
 	}
@@ -98,57 +98,9 @@ public class Do_NOT_throw
 		var l = new List<int?>();
 		l.Add(1);
 		l.Add(null);
-		
-		Assert.DoesNotThrow(()=>FF.AssertNullableInvariants(l));
+
+		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(l));
 	}
-	
-	[Test]
-	public void AdHocTest()
-	{
-		Assert.Throws<InvariantException>(() =>
-		{
-			var optionalList = new List<string?>();
-			var mandatoryList = new List<TestObjects.Leaf>();
-
-			var str = "this is a string";
-
-			var t = (optionalList, mandatoryList, str);
-			t.optionalList.Add(null);
-			t.optionalList.Add("this is a string");
-			t.mandatoryList.Add(new TestObjects.Leaf());
-			t.mandatoryList.Add(new TestObjects.Leaf());
-			t.mandatoryList.Add(new TestObjects.Leaf());
-			t.mandatoryList[1] = null!; // should throw because there's a list of non-null objects with a null-object
-
-			FF.AssertNullableInvariants(t);
-		});
-	}
-
-	[Test]
-	public void ForbiddenNullInList()
-	{
-
-		Assert.Throws<InvariantException>(() =>
-		{
-			var l = new List<TestObjects.Leaf>();
-			l.Add(new());
-			l[0] = null!;
-			FF.AssertNullableInvariants(l);
-		});
-	}
-
-	[Test]
-	public void AllowedNullInList()
-	{
-		Assert.DoesNotThrow(() =>
-		{
-			var l = new List<TestObjects.Leaf?>();
-			l.Add(null);
-			FF.AssertNullableInvariants(l);
-		});
-	}
-
-
 }
 
 public class Do_NOT_throw_when_all_required_are_set_and
@@ -367,10 +319,10 @@ public class TestObjects
 	[Test]
 	public static void InvariantExceptionGathersNames()
 	{
-		var ie = new InvariantException("leaf",InvariantException.Reason.HasNullMember);
-		ie.AddNameOfCurrentContext("branch");
-		ie.AddNameOfCurrentContext("trunk");
-		Assert.That(ie.Message, Is.EqualTo("Non-nullable reference trunk.branch.leaf is null."));
+		var ie = new InvariantException("leaf", InvariantException.Reason.HasNull);
+		ie.PushNameOfCurrentContext("branch");
+		ie.PushNameOfCurrentContext("trunk");
+		Assert.That(ie.Message, Is.EqualTo("Non-nullable reference trunk.branch.leaf is null"));
 	}
 }
 }

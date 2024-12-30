@@ -9,62 +9,57 @@ public class InvariantException : Exception
 {
 	public enum Reason
 	{
-		HasNullMember,
-		HasNonEnumerableIndexParam
+		HasNull,
+		HasNonEnumerableIndexProperty,
+		HasMultipleIndexProperties, //impossible in C# but possible in e.g. VB.Net so foreign types could have 2+
 	}
-	
+
 	public InvariantException(string memberName, Reason reason)
 	{
-		Add(memberName);
+		PushNameOfCurrentContext(memberName);
 		_reason = reason;
 	}
 
-	public void AddNameOfCurrentContext(string memberName)
+	public void PushNameOfCurrentContext(string memberName)
 	{
-		Add(memberName);
+		_names.Add(memberName.Length == 0 ? "__Anonymous__" : memberName);
+		_message = null;
 	}
 
-	private void Add(string memberName)
+	public override string Message => BuildMessage();
+
+	private string BuildMessage()
 	{
-		_names.Add(memberName == "" ? "__Anonymous__" : memberName);
-	}
+		if (_message != null) return _message;
 
-	public override string Message => ConCat();
+		var sb = new StringBuilder(_names.Count + _names.Sum(s => s.Length));
 
-	private string ConCat()
-	{
-		var (prefix, postfix) = _reason == Reason.HasNullMember
-			? (NullPrefix, NullPostfix)
-			: (IndexPrefix, IndexPostfix);
-		
-		var sb = new StringBuilder(prefix.Length +
-		                           postfix.Length +
-		                           _names.Sum(n => n.Length) +
-		                           _names.Count -
-		                           1); //fencepost - period between each name, 3 names => 2 periods
-
-		sb.Append(NullPrefix);
-
-		// pure garbage loop but we need to add names in reverse while adding periods but only in between.
-		sb.Append(_names.Last());
-		for (var i = _names.Count - 2; 0 <= i; --i)
+		foreach (var s in _names.AsEnumerable().Reverse().Take(_names.Count - 1))
 		{
-			sb.Append('.').Append(_names[i]);
+			sb.Append(s).Append('.');
 		}
-		// I guess we could also just add a period after every name, then remove the last period? But that would
-		// just move the ugliness somewhere else. There is probably a string.ReverseConcat or something like
-		// that but then it wouldn't know about the pre/postfix OR it would also concat those with periods in
-		// between which is ALSO not what we want.
 
-		sb.Append(NullPostfix);
-		
-		return sb.ToString();
+		sb.Append(_names.FirstOrDefault(""));
+
+		var template = _reason switch
+		{
+			Reason.HasNull => NullTemplate,
+			Reason.HasNonEnumerableIndexProperty => IndexTemplate,
+			_ => DefaultTemplate
+		};
+
+		return string.Format(template, sb);
 	}
+
+	private const string NullTemplate = "Non-nullable reference {0} is null";
+	private const string IndexTemplate = "Index property {0} cannot be enumerated";
+	private const string DefaultTemplate = "unspecified error handling {0}";
 
 	private const string NullPrefix = "Non-nullable reference ";
 	private const string NullPostfix = " is null.";
 	private const string IndexPrefix = "Index property ";
 	private const string IndexPostfix = " cannot be enumerated.";
-	private readonly List<string> _names = new List<string>(1);
+	private readonly List<string> _names = new List<string>();
 	private Reason _reason;
+	private string? _message = null;
 }

@@ -1,26 +1,30 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Collections;
-using System.Security.Authentication.ExtendedProtection;
+using System.Reflection;
 
 namespace snns;
 
 public static partial class FF
 {
-	public static void AssertNullableInvariants<T>(in T t)
+	public static void AssertNullableInvariants<TInput>(in TInput input)
 	{
-		var obj = t;
-		var info = new NullableInvariantsDetails.Info(typeof(T).Name);
+		var info = new NullableInvariantsDetails.Info
+		{
+			Name = typeof(TInput).Name,
+			IsNullable = false,
+			PropertyInfo = null,
+			FieldInfo = null,
+			IsIndexer = false,
+		};
 
-		NullableInvariantsDetails.AssertNullableInvariants(obj, info);
+		NullableInvariantsDetails.AssertNullableInvariants(input, info);
 	}
 
 
 	private static class NullableInvariantsDetails
 	{
-		public static void AssertNullableInvariants(in object? obj, Info info)
+		public static void AssertNullableInvariants(in object? input, Info info)
 		{
-			if (obj == null)
+			if (input == null)
 			{
 				if (info.IsNullable)
 				{
@@ -28,135 +32,125 @@ public static partial class FF
 				}
 				else
 				{
-					throw new InvariantException(info.Name, InvariantException.Reason.HasNullMember);
+					throw new InvariantException(info.Name, InvariantException.Reason.HasNull);
 				}
 			}
 
 			try
 			{
-				var type = obj.GetType();
+				var memberinfos = CreateInfosFor(input);
 
-				var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public);
-				var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
-				var hasIndexProperty = false;
-
-
-				foreach (var field in fields)
+				foreach (var memberInfo in memberinfos)
 				{
-					var o = field.GetValue(obj);
-					var i = new Info(field);
-					AssertNullableInvariants(o, i);
-				}
-
-				foreach (var property in properties)
-				{
-					if (property.GetIndexParameters().Length > 0)
+					if (!memberInfo.IsIndexer)
 					{
-						hasIndexProperty = true;
-						continue;
+						var memberValue = memberInfo.GetValue(input);
+						AssertNullableInvariants(memberValue, memberInfo);
 					}
-
-					var o = property.GetValue(obj);
-					var i = new Info(property);
-					AssertNullableInvariants(o, i);
-				}
-
-
-				if (!hasIndexProperty)
-				{
-					return;
-				}
-				else
-				{
-					var indexObj = (IEnumerable)obj;
-					if (indexObj == null)
-						throw new InvariantException(info.Name, InvariantException.Reason.HasNonEnumerableIndexParam);
-
-					foreach (var o in indexObj)
+					else if (input is IEnumerable ie)
 					{
-						FF.AssertNullableInvariants(o); // <=== WAIT HOLD ON
-						// ^ If o is null, this throws - so what if indexObj is ienumerable<T?> rather than <T> ??
-						// TODO
+						foreach (var e in ie)
+						{
+							AssertNullableInvariants(e, memberInfo);
+						}
 					}
 				}
 			}
 			catch (InvariantException e)
 			{
-				e.AddNameOfCurrentContext(info.Name);
+				e.PushNameOfCurrentContext(info.Name);
 				throw;
 			}
 		}
 
-		private static readonly NullabilityInfoContext NullabilityInfoContext = new();
 
-		private const BindingFlags BindingFlags = System.Reflection.BindingFlags.Public |
-		                                          System.Reflection.BindingFlags.NonPublic |
-		                                          System.Reflection.BindingFlags.Instance;
+		#region info
 
-		// we need info about each object,
-		// and we need info about each object member, if any 
-		public struct Info
+		private const BindingFlags ReflectionFlags = BindingFlags.Public |
+		                                             //BindingFlags.NonPublic |
+		                                             BindingFlags.Instance;
+
+		public static List<Info> CreateInfosFor(in object obj)
 		{
-			public static IEnumerable<Info> GetForMembersOf(object obj)
+			var l = new List<Info>();
+			var t = obj.GetType();
+
+			l.AddRange(t.GetFields(ReflectionFlags).Select(InfoField));
+			l.AddRange(t.GetProperties(ReflectionFlags).Select(InfoProperty));
+
+			return l;
+		}
+
+		public readonly struct Info
+		{
+			public required string Name { get; init; }
+			public required PropertyInfo? PropertyInfo { get; init; }
+			public required FieldInfo? FieldInfo { get; init; }
+			public required bool IsNullable { get; init; }
+
+			public required bool IsIndexer { get; init; }
+			public bool IsField => FieldInfo != null;
+
+			public object? GetValue(object o)
 			{
-				var type = obj.GetType();
-
-				var propertyInfos = type
-					.GetProperties(BindingFlags)
-					.Select(propertyInfo => new Info(propertyInfo));
-
-				var fieldInfos = type
-					.GetFields(BindingFlags)
-					.Select(fieldInfo => new Info(fieldInfo));
-
-				var memberInfos = propertyInfos.Concat(fieldInfos);
-
-				return memberInfos;
-			}
-
-			public string Name { get; private set; }
-			public bool IsNullable => _flags.HasFlag(Flags.Nullable);
-			public bool IsIndexType => _flags.HasFlag(Flags.IndexType);
-
-			public Info(string name)
-			{
-				Name = name;
-				_flags = Flags.None;
-			}
-
-			public Info(PropertyInfo info)
-			{
-				Name = info.Name;
-				_flags = Flags.None;
-				if (NullabilityInfoContext.Create(info).WriteState == NullabilityState.Nullable)
-					_flags = Flags.Nullable;
-				var parameters = info.GetIndexParameters();
-				foreach (var p in parameters)
+				if (IsField)
 				{
-					var attr = p.Attributes;
-					//		attr.
+					return FieldInfo?.GetValue(o);
+				}
+				else
+				{
+					return PropertyInfo?.GetValue(o);
 				}
 			}
-
-			public Info(FieldInfo info)
-			{
-				Name = info.Name;
-				_flags = Flags.None;
-				if (NullabilityInfoContext.Create(info).WriteState == NullabilityState.Nullable)
-					_flags = Flags.Nullable;
-
-				//	info.GetValueDirect()
-			}
-
-			[Flags]
-			private enum Flags
-			{
-				None = 0,
-				Nullable = 1,
-				IndexType = 2,
-			}
-
-			private readonly Flags _flags = Flags.None;
 		}
+
+		public static Info InfoField(FieldInfo fieldInfo)
+		{
+			return new Info
+			{
+				Name = fieldInfo.Name,
+				PropertyInfo = null,
+				FieldInfo = fieldInfo,
+				IsNullable = ReadStateIsNullable(fieldInfo),
+				IsIndexer = false,
+			};
+		}
+
+		public static Info InfoProperty(PropertyInfo propertyInfo)
+		{
+			return new Info
+			{
+				Name = propertyInfo.Name,
+				PropertyInfo = propertyInfo,
+				FieldInfo = null,
+				IsNullable = ReadStateIsNullable(propertyInfo),
+				IsIndexer = MemberIsIndexer(propertyInfo),
+			};
+		}
+
+		#endregion
+
+		#region helpers
+
+		private static readonly NullabilityInfoContext NullabilityInfo = new();
+
+		private static bool ReadStateIsNullable(FieldInfo fieldInfo)
+		{
+			var ni = NullabilityInfo.Create(fieldInfo);
+			return ni.ReadState == NullabilityState.Nullable;
+		}
+
+		private static bool ReadStateIsNullable(PropertyInfo propertyInfo)
+		{
+			var ni = NullabilityInfo.Create(propertyInfo);;
+			return ni.ReadState == NullabilityState.Nullable;
+		}
+
+		private static bool MemberIsIndexer(PropertyInfo propertyInfo)
+		{
+			return propertyInfo.GetIndexParameters().Length != 0;
+		}
+
+		#endregion
 	}
 }
