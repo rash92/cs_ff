@@ -319,8 +319,14 @@ public class TestObjects
 	[Test]
 	public static void InvariantExceptionGathersNames()
 	{
-		var ie = new InvariantException("leaf", InvariantException.Reason.HasNull);
+		var ie = new InvariantException();
+
+		ie.PushNameOfCurrentContext("leaf");
+		Assert.That(ie.Message, Is.EqualTo("Non-nullable reference leaf is null"));
+
 		ie.PushNameOfCurrentContext("branch");
+		Assert.That(ie.Message, Is.EqualTo("Non-nullable reference branch.leaf is null"));
+
 		ie.PushNameOfCurrentContext("trunk");
 		Assert.That(ie.Message, Is.EqualTo("Non-nullable reference trunk.branch.leaf is null"));
 	}

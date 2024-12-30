@@ -13,7 +13,7 @@ public static partial class FF
 			IsNullable = false,
 			PropertyInfo = null,
 			FieldInfo = null,
-			IsIndexer = false,
+			IsIndexProperty = false,
 		};
 
 		NullableInvariantsDetails.AssertNullableInvariants(input, info);
@@ -24,34 +24,34 @@ public static partial class FF
 	{
 		public static void AssertNullableInvariants(in object? input, Info info)
 		{
-			if (input == null)
-			{
-				if (info.IsNullable)
-				{
-					return;
-				}
-				else
-				{
-					throw new InvariantException(info.Name, InvariantException.Reason.HasNull);
-				}
-			}
-
 			try
 			{
-				var memberinfos = CreateInfosFor(input);
-
-				foreach (var memberInfo in memberinfos)
+				if (input == null)
 				{
-					if (!memberInfo.IsIndexer)
+					if (info.IsNullable)
 					{
-						var memberValue = memberInfo.GetValue(input);
-						AssertNullableInvariants(memberValue, memberInfo);
+						return;
+					}
+					else
+					{
+						throw new InvariantException();
+					}
+				}
+
+				var memberTypes = CreateTypeInfoFor(input);
+
+				foreach (var type in memberTypes)
+				{
+					if (!type.IsIndexProperty)
+					{
+						var memberValue = type.GetValue(input);
+						AssertNullableInvariants(memberValue, type);
 					}
 					else if (input is IEnumerable ie)
 					{
 						foreach (var e in ie)
 						{
-							AssertNullableInvariants(e, memberInfo);
+							AssertNullableInvariants(e, type);
 						}
 					}
 				}
@@ -70,7 +70,7 @@ public static partial class FF
 		                                             //BindingFlags.NonPublic |
 		                                             BindingFlags.Instance;
 
-		public static List<Info> CreateInfosFor(in object obj)
+		public static List<Info> CreateTypeInfoFor(in object obj)
 		{
 			var l = new List<Info>();
 			var t = obj.GetType();
@@ -88,7 +88,7 @@ public static partial class FF
 			public required FieldInfo? FieldInfo { get; init; }
 			public required bool IsNullable { get; init; }
 
-			public required bool IsIndexer { get; init; }
+			public required bool IsIndexProperty { get; init; }
 			public bool IsField => FieldInfo != null;
 
 			public object? GetValue(object o)
@@ -112,7 +112,7 @@ public static partial class FF
 				PropertyInfo = null,
 				FieldInfo = fieldInfo,
 				IsNullable = ReadStateIsNullable(fieldInfo),
-				IsIndexer = false,
+				IsIndexProperty = false,
 			};
 		}
 
@@ -124,7 +124,7 @@ public static partial class FF
 				PropertyInfo = propertyInfo,
 				FieldInfo = null,
 				IsNullable = ReadStateIsNullable(propertyInfo),
-				IsIndexer = MemberIsIndexer(propertyInfo),
+				IsIndexProperty = MemberIsIndexer(propertyInfo),
 			};
 		}
 
@@ -142,7 +142,8 @@ public static partial class FF
 
 		private static bool ReadStateIsNullable(PropertyInfo propertyInfo)
 		{
-			var ni = NullabilityInfo.Create(propertyInfo);;
+			var ni = NullabilityInfo.Create(propertyInfo);
+			;
 			return ni.ReadState == NullabilityState.Nullable;
 		}
 
