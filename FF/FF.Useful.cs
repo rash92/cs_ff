@@ -1,12 +1,20 @@
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 
 namespace snns;
 
 public static partial class FF
 {
-	public static bool IsUseful([NotNullWhen(true)] object? obj)
+	public static void AssertUseful([NotNullWhen(true)]object? obj)
+	{
+		if (IsUseful(obj))
+			return;
+		var ex = new InvariantException(InvariantException.Reason.NotUseful);
+		ex.PushNameOfCurrentContext(obj?.GetType().Name ?? "null");
+		throw ex;
+	}
+
+	public static bool IsUseful([NotNullWhen(true)]object? obj)
 	{
 		return obj switch
 		{
@@ -17,12 +25,12 @@ public static partial class FF
 		};
 	}
 
-	public static bool IsUseful([NotNullWhen(true)] IEnumerable? ie)
+	public static bool IsUseful([NotNullWhen(true)]IEnumerable? ie)
 	{
 		return ie?.Cast<object?>()?.Any(IsUseful) ?? false;
 	}
 
-	public static bool IsUseful([NotNullWhen(true)] string? str)
+	public static bool IsUseful([NotNullWhen(true)]string? str)
 	{
 		return !string.IsNullOrWhiteSpace(str);
 	}

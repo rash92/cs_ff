@@ -15,6 +15,7 @@ public class InvariantException : Exception
 			Reason.IllegalNullable => NullTemplate,
 			Reason.RecursionLimit => RecursionTemplate,
 			Reason.EnumerationLimit => EnumerationTemplate,
+			Reason.NotUseful => NotUsefulTemplate,
 			_ => DefaultMessage
 		};
 	}
@@ -23,7 +24,8 @@ public class InvariantException : Exception
 	{
 		RecursionLimit,
 		IllegalNullable,
-		EnumerationLimit
+		EnumerationLimit,
+		NotUseful
 	}
 
 	public override string Message => BuildMessage();
@@ -81,6 +83,7 @@ public class InvariantException : Exception
 	private const string NullTemplate = "Non-nullable reference {0} is null";
 	private const string RecursionTemplate = "Recursion limit reached in {0}";
 	private const string EnumerationTemplate = "Enumeration limit reached in {0}";
+	private const string NotUsefulTemplate = "Asserted that {0} is useful but it is not";
 	private readonly string _template;
 
 	private const string ConcatTemplate = "{0}.{1}";
