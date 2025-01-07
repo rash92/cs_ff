@@ -1,6 +1,6 @@
 using snns;
 
-namespace Test_FF;
+namespace Test_SameElements;
 
 public class SameElements
 {

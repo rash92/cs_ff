@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 
@@ -7,31 +8,22 @@ public static partial class FF
 {
 	public static bool IsUseful([NotNullWhen(true)] object? obj)
 	{
-		return obj != null;
+		return obj switch
+		{
+			null => false,
+			string str => IsUseful(str),
+			IEnumerable ie => IsUseful(ie),
+			_ => true,
+		};
+	}
+
+	public static bool IsUseful([NotNullWhen(true)] IEnumerable? ie)
+	{
+		return ie?.Cast<object?>()?.Any(IsUseful) ?? false;
 	}
 
 	public static bool IsUseful([NotNullWhen(true)] string? str)
 	{
 		return !string.IsNullOrWhiteSpace(str);
-	}
-
-	public static bool IsUseful<T>([NotNullWhen(true)] T? t) where T : class
-	{
-		return t != null;
-	}
-	
-	public static bool IsUseful<T>([NotNullWhen(true)] T? t) where T : struct
-	{
-		return t.HasValue;
-	}
-	
-	public static bool IsUseful<T>([NotNullWhen(true)] IEnumerable<T?>? t) where T : class
-	{
-		return (t?.Any(IsUseful)).GetValueOrDefault(false);
-	}
-
-	public static bool IsUseful<T>([NotNullWhen(true)] IEnumerable<T?>? t) where T : struct
-	{
-		return (t?.Any(IsUseful)).GetValueOrDefault(false);
 	}
 }
