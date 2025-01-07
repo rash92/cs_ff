@@ -5,31 +5,33 @@ namespace snns;
 
 public static partial class FF
 {
-	/// <summary>
-	/// IsUseful(s) == !string.IsNullOrWhiteSpace(s)
-	/// </summary>
-	/// <param name="s">Null or any string</param>
-	/// <returns>
-	/// True when not false.<br/>
-	/// False when s is null, empty, or contains only whitespace.
-	/// </returns>
-	[Pure]
-	public static bool IsUseful([NotNullWhen(true)] string? s)
+	public static bool IsUseful([NotNullWhen(true)] object? obj)
 	{
-		return !string.IsNullOrWhiteSpace(s);
+		return obj != null;
 	}
 
-	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="collection"></param>
-	/// <typeparam name="T"></typeparam>
-	/// <returns></returns>
-	private static bool IsUseful<T>([NotNullWhen(true)] IReadOnlyCollection<T>? collection)
+	public static bool IsUseful([NotNullWhen(true)] string? str)
 	{
-		if (collection == null || collection.Count == 0)
-			return false;
-		//TODO
-		throw new NotImplementedException();
+		return !string.IsNullOrWhiteSpace(str);
+	}
+
+	public static bool IsUseful<T>([NotNullWhen(true)] T? t) where T : class
+	{
+		return t != null;
+	}
+	
+	public static bool IsUseful<T>([NotNullWhen(true)] T? t) where T : struct
+	{
+		return t.HasValue;
+	}
+	
+	public static bool IsUseful<T>([NotNullWhen(true)] IEnumerable<T?>? t) where T : class
+	{
+		return (t?.Any(IsUseful)).GetValueOrDefault(false);
+	}
+
+	public static bool IsUseful<T>([NotNullWhen(true)] IEnumerable<T?>? t) where T : struct
+	{
+		return (t?.Any(IsUseful)).GetValueOrDefault(false);
 	}
 }
