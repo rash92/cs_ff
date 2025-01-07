@@ -1,13 +1,27 @@
 using System.Collections;
 using System.Reflection;
-using System.Runtime.InteropServices.JavaScript;
-using System.Security.Cryptography;
 
 namespace snns;
 
 public static partial class FF
 {
-	public static void AssertNullableInvariants<TInput>(
+	public static bool OnlyNullablesAreNull<TInput>(
+		in TInput input,
+		int recursionLimit = 1000,
+		long enumerationLimit = long.MaxValue)
+	{
+		try
+		{
+			RequireOnlyNullablesAreNull(input, recursionLimit, enumerationLimit);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+	
+	public static void RequireOnlyNullablesAreNull<TInput>(
 		in TInput input,
 		int recursionLimit = 1000,
 		long enumerationLimit = long.MaxValue)
@@ -22,7 +36,7 @@ public static partial class FF
 		};
 
 		var impl = new NullableInvariantsImpl();
-		impl.AssertNullableInvariants(input, info, recursionLimit, enumerationLimit);
+		impl.RequireNullableInvariants(input, info, recursionLimit, enumerationLimit);
 	}
 
 
@@ -30,7 +44,7 @@ public static partial class FF
 	{
 		private readonly List<object> _visited = [];
 
-		public void AssertNullableInvariants(
+		public void RequireNullableInvariants(
 			object? input,
 			Info info,
 			int recursionLimit,
@@ -58,14 +72,14 @@ public static partial class FF
 					if (!typeInfo.IsIndexProperty)
 					{
 						var typeValue = typeInfo.GetValue(input);
-						AssertNullableInvariants(typeValue, typeInfo, recursionLimit - 1, enumerationLimit);
+						RequireNullableInvariants(typeValue, typeInfo, recursionLimit - 1, enumerationLimit);
 					}
 					else if (input is IEnumerable ie)
 					{
 						foreach (var e in ie)
 						{
 							enumerationLimit--;
-							AssertNullableInvariants(e, typeInfo, recursionLimit, enumerationLimit);
+							RequireNullableInvariants(e, typeInfo, recursionLimit, enumerationLimit);
 						}
 					}
 				}

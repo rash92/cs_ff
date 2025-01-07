@@ -14,7 +14,7 @@ public static partial class FF
 
 	NAMING CONVENTIONS
 
-	-	void AssertFactAbout(object o)
+	-	void RequireFactAbout(object o)
 		-	throws unless the fact is true
 
 	-	bool FactAbout(object o)

@@ -7,44 +7,52 @@ public class RecursionAndEnumeration
 {
 	public enum Behavior
 	{
-		Throws,
-		DoesNotThrow
+		Throw,
+		DontThrow
 	}
 
 	[Test]
 	// empty collections never over-enumerate
-	[TestCase(0, 0, Behavior.DoesNotThrow)]
-	[TestCase(0, 1, Behavior.DoesNotThrow)]
-	[TestCase(0, long.MaxValue, Behavior.DoesNotThrow)]
+	[TestCase(0, 0, Behavior.DontThrow)]
+	[TestCase(0, 1, Behavior.DontThrow)]
+	[TestCase(0, long.MaxValue, Behavior.DontThrow)]
 	// fencepost error near 1 item
-	[TestCase(1, 0, Behavior.Throws)]
-	[TestCase(1, 1, Behavior.DoesNotThrow)]
-	[TestCase(1, 2, Behavior.DoesNotThrow)]
-	[TestCase(1, long.MaxValue, Behavior.DoesNotThrow)]
+	[TestCase(1, 0, Behavior.Throw)]
+	[TestCase(1, 1, Behavior.DontThrow)]
+	[TestCase(1, 2, Behavior.DontThrow)]
+	[TestCase(1, long.MaxValue, Behavior.DontThrow)]
 	// general case
-	[TestCase(100, 0, Behavior.Throws)]
-	[TestCase(100, 1, Behavior.Throws)]
-	[TestCase(100, 99, Behavior.Throws)]
-	[TestCase(100, 100, Behavior.DoesNotThrow)]
-	[TestCase(100, 101, Behavior.DoesNotThrow)]
-	[TestCase(100, long.MaxValue, Behavior.DoesNotThrow)]
+	[TestCase(100, 0, Behavior.Throw)]
+	[TestCase(100, 1, Behavior.Throw)]
+	[TestCase(100, 99, Behavior.Throw)]
+	[TestCase(100, 100, Behavior.DontThrow)]
+	[TestCase(100, 101, Behavior.DontThrow)]
+	[TestCase(100, long.MaxValue, Behavior.DontThrow)]
 	public void ThrowsIfCollectionHasMoreItemsThanEnumerationLimit(int items, long enumerationLimit, Behavior behavior)
 	{
 		var collection = Enumerable.Range(0, items);
 
 		switch (behavior)
 		{
-			case Behavior.Throws:
+			case Behavior.Throw:
+			{
 				Assert.Throws<InvariantException>(
-					() => FF.AssertNullableInvariants(collection, enumerationLimit: enumerationLimit));
+					() => FF.RequireOnlyNullablesAreNull(collection, enumerationLimit: enumerationLimit));
+				Assert.That(FF.OnlyNullablesAreNull(collection, enumerationLimit: enumerationLimit), Is.False);
 				break;
-			case Behavior.DoesNotThrow:
+			}
+			case Behavior.DontThrow:
+			{
 				Assert.DoesNotThrow(
-					() => FF.AssertNullableInvariants(collection, enumerationLimit: enumerationLimit));
+					() => FF.RequireOnlyNullablesAreNull(collection, enumerationLimit: enumerationLimit));
+				Assert.That(FF.OnlyNullablesAreNull(collection, enumerationLimit: enumerationLimit), Is.True);
 				break;
+			}
 			default:
+			{
 				Assert.Fail();
 				break;
+			}
 		}
 	}
 
@@ -72,19 +80,28 @@ public class RecursionAndEnumeration
 		Assert.NotNull( /**/ w.W!.W!.W!.W!.W);
 		Assert.Null( /*****/ w.W!.W!.W!.W!.W!.W);
 
-		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(w));
+		Assert.DoesNotThrow(() => FF.RequireOnlyNullablesAreNull(w));
+		Assert.That(FF.OnlyNullablesAreNull(w));
 
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(w, recursionLimit: 1));
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(w, recursionLimit: 2));
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(w, recursionLimit: 3));
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(w, recursionLimit: 4));
-		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(w, recursionLimit: 5));
-		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(w, recursionLimit: 6));
+		Assert.Throws<InvariantException>(() => FF.RequireOnlyNullablesAreNull(w, recursionLimit: 1));
+		Assert.Throws<InvariantException>(() => FF.RequireOnlyNullablesAreNull(w, recursionLimit: 2));
+		Assert.Throws<InvariantException>(() => FF.RequireOnlyNullablesAreNull(w, recursionLimit: 3));
+		Assert.Throws<InvariantException>(() => FF.RequireOnlyNullablesAreNull(w, recursionLimit: 4));
+		Assert.DoesNotThrow(() => FF.RequireOnlyNullablesAreNull(w, recursionLimit: 5));
+		Assert.DoesNotThrow(() => FF.RequireOnlyNullablesAreNull(w, recursionLimit: 6));
+
+		Assert.That(FF.OnlyNullablesAreNull(w, recursionLimit: 1), Is.False);
+		Assert.That(FF.OnlyNullablesAreNull(w, recursionLimit: 2), Is.False);
+		Assert.That(FF.OnlyNullablesAreNull(w, recursionLimit: 3), Is.False);
+		Assert.That(FF.OnlyNullablesAreNull(w, recursionLimit: 4), Is.False);
+		Assert.That(FF.OnlyNullablesAreNull(w, recursionLimit: 5), Is.True);
+		Assert.That(FF.OnlyNullablesAreNull(w, recursionLimit: 6), Is.True);
 
 		// create a cyclic graph
 		w.W = w;
 
-		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(w));
+		Assert.DoesNotThrow(() => FF.RequireOnlyNullablesAreNull(w));
+		Assert.That(FF.OnlyNullablesAreNull(w));
 	}
 
 	public class RecursiveEnumerativeSpaghetti
@@ -177,20 +194,57 @@ public class RecursionAndEnumeration
 	private const bool KeepsInvariants = false;
 
 	[Test]
-	public void CheckInvariantsInRecursiveEnumerativeSpaghetti()
+	//Bad invariants:
+	[TestCase(ZeroRecursion, ZeroEnumeration, BreakInvariants, Behavior.Throw)] // fully constrained => failure
+	[TestCase(FreeRecursion, ZeroEnumeration, BreakInvariants, Behavior.Throw)] // constrained enumeration => failure
+	[TestCase(ZeroRecursion, FreeEnumeration, BreakInvariants, Behavior.Throw)] // constrained recursion => failure
+	[TestCase(FreeRecursion, FreeEnumeration, BreakInvariants, Behavior.Throw)] // no constraints=> still failure
+	//Good invariants:
+	[TestCase(ZeroRecursion, ZeroEnumeration, KeepsInvariants, Behavior.Throw)] // fully constrained => failure
+	[TestCase(FreeRecursion, ZeroEnumeration, KeepsInvariants, Behavior.Throw)] // constrained enumeration => failure
+	[TestCase(ZeroRecursion, FreeEnumeration, KeepsInvariants, Behavior.Throw)] // constrained recursion => failure
+	[TestCase(FreeRecursion, FreeEnumeration, KeepsInvariants, Behavior.DontThrow)] // no constraints=> success
+	public void CheckInvariantsInRecursiveEnumerativeSpaghetti(int recursions,
+	                                                           long enumerations,
+	                                                           bool invariants,
+	                                                           Behavior behavior)
 	{
-		var spaghetti = CookSpaghetti(BreakInvariants);
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, ZeroRecursion, ZeroEnumeration));
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, ZeroRecursion, FreeEnumeration));
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, FreeRecursion, ZeroEnumeration));
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, FreeRecursion, FreeEnumeration));
+		var spaghetti = CookSpaghetti(invariants);
 
-		spaghetti = CookSpaghetti(KeepsInvariants);
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, ZeroRecursion, ZeroEnumeration));
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, ZeroRecursion, FreeEnumeration));
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(spaghetti, FreeRecursion, ZeroEnumeration));
+		switch (behavior)
+		{
+			case Behavior.Throw:
+			{
+				Assert.Throws<InvariantException>(() => FF.RequireOnlyNullablesAreNull(
+					                                  spaghetti,
+					                                  recursions,
+					                                  enumerations));
 
-		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(spaghetti, FreeRecursion, FreeEnumeration));
+				Assert.That(FF.OnlyNullablesAreNull(spaghetti,
+				                                    recursions,
+				                                    enumerations),
+				            Is.False);
+				break;
+			}
+			case Behavior.DontThrow:
+			{
+				Assert.DoesNotThrow(() => FF.RequireOnlyNullablesAreNull(
+					                    spaghetti,
+					                    recursions,
+					                    enumerations));
+
+				Assert.That(FF.OnlyNullablesAreNull(spaghetti,
+				                                    recursions,
+				                                    enumerations),
+				            Is.True);
+				break;
+			}
+			default:
+			{
+				Assert.Fail();
+				break;
+			}
+		}
 	}
 }
 
@@ -202,21 +256,17 @@ public class Required_members_ARE_SET_and
 	[Test]
 	public void Optional_members_ARE_SET()
 	{
-		Assert.DoesNotThrow(() =>
-		{
-			var t = TestObjects.Tree.FullyGrown();
-			FF.AssertNullableInvariants(t);
-		});
+		var t = TestObjects.Tree.FullyGrown();
+		Assert.DoesNotThrow(() => FF.RequireOnlyNullablesAreNull(t));
+		Assert.That(FF.OnlyNullablesAreNull(t));
 	}
 
 	[Test]
 	public void Optional_members_ARE_NOT_set()
 	{
-		Assert.DoesNotThrow(() =>
-		{
-			var t = TestObjects.Tree.Sapling();
-			FF.AssertNullableInvariants(t);
-		});
+		var t = TestObjects.Tree.Sapling();
+		Assert.DoesNotThrow(() => FF.RequireOnlyNullablesAreNull(t));
+		Assert.That(FF.OnlyNullablesAreNull(t));
 	}
 }
 }
@@ -228,27 +278,24 @@ public class OuterObject
 	[Test]
 	public static void IsNullReference()
 	{
-		Assert.Throws<InvariantException>(() =>
-		{
-			string s = null!;
-			FF.AssertNullableInvariants(s);
-		});
+		string s = null!;
+		Assert.Throws<InvariantException>(() => FF.RequireOnlyNullablesAreNull(s));
+		Assert.That(!FF.OnlyNullablesAreNull(s));
 	}
 
 	[Test]
 	public static void IsNullStruct()
 	{
-		Assert.Throws<InvariantException>(() =>
-		{
-			int? i = null;
-			FF.AssertNullableInvariants(i);
-		});
+		int? i = null;
+		Assert.Throws<InvariantException>(() => FF.RequireOnlyNullablesAreNull(i));
+		Assert.That(!FF.OnlyNullablesAreNull(i));
 	}
 
 	[Test]
 	public static void IsNull()
 	{
-		Assert.Throws<InvariantException>(() => { FF.AssertNullableInvariants((object)null!); });
+		Assert.Throws<InvariantException>(() => { FF.RequireOnlyNullablesAreNull((object)null!); });
+		Assert.That(!FF.OnlyNullablesAreNull((object)null!));
 	}
 }
 
@@ -262,7 +309,7 @@ public class Required_members_are_NOT_SET_and
 			var t = TestObjects.Tree.Pruned();
 			t.OptFld = TestObjects.Branch.FullyGrown();
 			t.OptPrp = TestObjects.Branch.FullyGrown();
-			FF.AssertNullableInvariants(t);
+			FF.RequireOnlyNullablesAreNull(t);
 		});
 	}
 
@@ -272,7 +319,7 @@ public class Required_members_are_NOT_SET_and
 		Assert.Throws<InvariantException>(() =>
 		{
 			var t = TestObjects.Tree.Pruned();
-			FF.AssertNullableInvariants(t);
+			FF.RequireOnlyNullablesAreNull(t);
 		});
 	}
 }
@@ -289,7 +336,7 @@ public class Do_NOT_throw
 		l.Add(1);
 		l.Add(null);
 
-		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(l));
+		Assert.DoesNotThrow(() => FF.RequireOnlyNullablesAreNull(l));
 	}
 }
 
@@ -299,7 +346,7 @@ public class Do_NOT_throw_when_all_required_are_set_and
 	public void optional_field_and_optional_property_is_set()
 	{
 		var b = TestObjects.Bush.FullyGrown();
-		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(b));
+		Assert.DoesNotThrow(() => FF.RequireOnlyNullablesAreNull(b));
 	}
 
 	[Test]
@@ -307,7 +354,7 @@ public class Do_NOT_throw_when_all_required_are_set_and
 	{
 		var b = TestObjects.Bush.FullyGrown();
 		b.OptionalProperty = null;
-		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(b));
+		Assert.DoesNotThrow(() => FF.RequireOnlyNullablesAreNull(b));
 	}
 
 	[Test]
@@ -315,7 +362,7 @@ public class Do_NOT_throw_when_all_required_are_set_and
 	{
 		var b = TestObjects.Bush.FullyGrown();
 		b.OptionalField = null;
-		Assert.DoesNotThrow(() => FF.AssertNullableInvariants(b));
+		Assert.DoesNotThrow(() => FF.RequireOnlyNullablesAreNull(b));
 	}
 }
 
@@ -326,7 +373,7 @@ public class DO_THROW_When
 	{
 		var b = TestObjects.Bush.FullyGrown();
 		b.RequiredProperty = null!;
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(b));
+		Assert.Throws<InvariantException>(() => FF.RequireOnlyNullablesAreNull(b));
 	}
 
 	[Test]
@@ -334,7 +381,7 @@ public class DO_THROW_When
 	{
 		var b = TestObjects.Bush.FullyGrown();
 		b.RequiredField = null!;
-		Assert.Throws<InvariantException>(() => FF.AssertNullableInvariants(b));
+		Assert.Throws<InvariantException>(() => FF.RequireOnlyNullablesAreNull(b));
 	}
 }
 }
@@ -514,13 +561,13 @@ public class TestObjects
 		Assert.That(ie.Message, Is.EqualTo("Unspecified invariant error {0}"));
 
 		ie.PushNameOfCurrentContext("Leaf");
-		Assert.That(ie.Message, Is.EqualTo("Non-nullable reference Leaf is null"));
+		Assert.That(ie.Message, Is.EqualTo("Required reference Leaf is null"));
 
 		ie.PushNameOfCurrentContext("Branch");
-		Assert.That(ie.Message, Is.EqualTo("Non-nullable reference Branch.Leaf is null"));
+		Assert.That(ie.Message, Is.EqualTo("Required reference Branch.Leaf is null"));
 
 		ie.PushNameOfCurrentContext("Trunk");
-		Assert.That(ie.Message, Is.EqualTo("Non-nullable reference Trunk.Branch.Leaf is null"));
+		Assert.That(ie.Message, Is.EqualTo("Required reference Trunk.Branch.Leaf is null"));
 	}
 }
 }

@@ -80,10 +80,10 @@ public class InvariantException : Exception
 	private const string DefaultMessage = "Unspecified invariant error {0}";
 	private string? _message = DefaultMessage;
 
-	private const string NullTemplate = "Non-nullable reference {0} is null";
+	private const string NullTemplate = "Required reference {0} is null";
 	private const string RecursionTemplate = "Recursion limit reached in {0}";
 	private const string EnumerationTemplate = "Enumeration limit reached in {0}";
-	private const string NotUsefulTemplate = "Asserted that {0} is useful but it is not";
+	private const string NotUsefulTemplate = "Required that {0} is useful but it is not";
 	private readonly string _template;
 
 	private const string ConcatTemplate = "{0}.{1}";

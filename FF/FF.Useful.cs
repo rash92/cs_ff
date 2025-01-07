@@ -5,7 +5,7 @@ namespace snns;
 
 public static partial class FF
 {
-	public static void AssertUseful([NotNullWhen(true)]object? obj)
+	public static void RequireUseful([NotNullWhen(true)]object? obj)
 	{
 		if (IsUseful(obj))
 			return;

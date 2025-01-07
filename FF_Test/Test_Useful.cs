@@ -13,7 +13,7 @@ public class TestIsUseful
 		{
 			object o = null!;
 			Assert.That(FF.IsUseful(o), Is.False);
-			Assert.Throws<InvariantException>(() => FF.AssertUseful(o));
+			Assert.Throws<InvariantException>(() => FF.RequireUseful(o));
 		}
 
 		[Test]
@@ -22,7 +22,7 @@ public class TestIsUseful
 		{
 			var str = "";
 			Assert.That(FF.IsUseful(str), Is.False);
-			Assert.Throws<InvariantException>(() => FF.AssertUseful(str));
+			Assert.Throws<InvariantException>(() => FF.RequireUseful(str));
 		}
 
 		[Test]
@@ -30,7 +30,7 @@ public class TestIsUseful
 		{
 			var whitespace = "    \t\n\t        \n           ";
 			Assert.That(FF.IsUseful(whitespace), Is.False);
-			Assert.Throws<InvariantException>(() => FF.AssertUseful(whitespace));
+			Assert.Throws<InvariantException>(() => FF.RequireUseful(whitespace));
 		}
 
 		[Test]
@@ -38,7 +38,7 @@ public class TestIsUseful
 		{
 			var nullableInt = new int?();
 			Assert.That(FF.IsUseful(nullableInt), Is.False);
-			Assert.Throws<InvariantException>(() => FF.AssertUseful(nullableInt));
+			Assert.Throws<InvariantException>(() => FF.RequireUseful(nullableInt));
 		}
 
 		[Test]
@@ -53,7 +53,7 @@ public class TestIsUseful
 		{
 			var emptylist = new List<int>();
 			Assert.That(FF.IsUseful(emptylist), Is.False);
-			Assert.Throws<InvariantException>(() => FF.AssertUseful(emptylist));
+			Assert.Throws<InvariantException>(() => FF.RequireUseful(emptylist));
 		}
 
 		[Test]
@@ -64,7 +64,7 @@ public class TestIsUseful
 				new(), new(), new()
 			};
 			Assert.That(FF.IsUseful(listOfEmptyLists), Is.False);
-			Assert.Throws<InvariantException>(() => FF.AssertUseful(listOfEmptyLists));
+			Assert.Throws<InvariantException>(() => FF.RequireUseful(listOfEmptyLists));
 		}
 
 		[Test]
@@ -75,7 +75,7 @@ public class TestIsUseful
 			var objectName = str.GetType().Name;
 			try
 			{
-				FF.AssertUseful(str);
+				FF.RequireUseful(str);
 			}
 			catch (Exception e)
 			{
@@ -90,16 +90,15 @@ public class TestIsUseful
 		{
 			var i = 1;
 			Assert.That(FF.IsUseful(i));
-			Assert.DoesNotThrow(()=>FF.AssertUseful(i));
+			Assert.DoesNotThrow(()=>FF.RequireUseful(i));
 
 			var str = "hello world";
 			Assert.That(FF.IsUseful(str));
-			Assert.DoesNotThrow(()=>FF.AssertUseful(str));
-
+			Assert.DoesNotThrow(()=>FF.RequireUseful(str));
 
 			var list = new List<int> { 1 };
 			Assert.That(FF.IsUseful(list));
-			Assert.DoesNotThrow(()=>FF.AssertUseful(list));
+			Assert.DoesNotThrow(()=>FF.RequireUseful(list));
 
 			var listList = new List<List<string?>>
 			{
@@ -115,11 +114,11 @@ public class TestIsUseful
 				}
 			};
 			Assert.That(FF.IsUseful(listList));
-			Assert.DoesNotThrow(()=>FF.AssertUseful(listList));
+			Assert.DoesNotThrow(()=>FF.RequireUseful(listList));
 
 			Nullable<int> nullableI = 1;
 			Assert.That(FF.IsUseful(nullableI));
-			Assert.DoesNotThrow(()=>FF.AssertUseful(nullableI));
+			Assert.DoesNotThrow(()=>FF.RequireUseful(nullableI));
 		}
 	}
 }
