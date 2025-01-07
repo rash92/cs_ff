@@ -1,6 +1,5 @@
 ﻿namespace snns;
 
-
 public static partial class FF
 {
 /*
@@ -10,14 +9,19 @@ public static partial class FF
 	- nullability issues
 
 	FF naming conventions:
-	-	void AssertXYZ(object o)
-		-	will throw unless o lives up to XYZ
 
-	-	bool IsXYZ(object o)
-		-	returns true if o lives up to XYZ
-		-	Throws if, and only if, an operation on o can throw.
-	
-	-	
+	-	void AssertFactAbout(object o)
+		-	throws unless the fact is true
+
+	-	bool FactAbout(object o)
+		-	Does not throw.
+		-	Returns false if any underlying operation throws.
+
+	-	T MethodName(object o)
+		-	returns T or throws
+
+	-	T? TryMethodName(object o)
+		-	returns T or null
 
 	FF introduces the concept "Useful" and "Useless"
 	-	An object o is useful iff it is not useless
@@ -26,7 +30,5 @@ public static partial class FF
 		-	if o is null
 		-	if o is a string && string.IsNullOrWhitespace(o)
 		-	if o is a collection with no useful items in it
-	-	The methods named "IsUseful"
-
 */
 }
