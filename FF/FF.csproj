@@ -3,10 +3,13 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
+
 		<AssemblyName>snns.ff</AssemblyName>
 		<RootNamespace>snns</RootNamespace>
-		<PackageId>snns.FF</PackageId>
-		<Authords>Søren Rune Nissen</Authords>
+
+		<PackageId>snns_ff</PackageId>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<Authors>SRNissen</Authors>
 		<Company>Unaffiliated</Company>
 	</PropertyGroup>
 
@@ -19,5 +22,9 @@
 		<WarningLevel>9999</WarningLevel>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="../README.md" Pack="true" PackagePath="\"/>
+	</ItemGroup>
 
 </Project>

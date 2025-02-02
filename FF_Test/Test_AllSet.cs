@@ -3,7 +3,7 @@ using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 using snns;
 
-namespace Test_FF;
+namespace Test_AllSet;
 
 public class AllSet
 {

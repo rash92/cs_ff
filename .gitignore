@@ -1,12 +1,28 @@
-# gitignore everything:
+# ignore everything
 *
 
-#except these specific files:
+# Except:
+
+## Repo management
 !.gitignore
 !.editorconfig
-!snns.sln
-
-#and the content of these specific directories:
-!/FF/
-!/FF_Test/
 !/.github/
+!/.github/*
+
+## Documentation
+!CONTRIBUTOR_LICENSE_AGREEMENT.md
+!CONTRIBUTOR_README.md
+!LICENSE
+!README.md
+
+## Build system
+!dotnet.sln
+!build_test.ps1
+!build_package.ps1
+!build_release.ps1
+
+## The FF source
+!/FF/
+!/FF/*
+!/FF_Test/
+!/FF_Test/*
