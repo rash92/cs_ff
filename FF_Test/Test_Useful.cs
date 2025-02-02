@@ -82,7 +82,7 @@ public class TestIsUseful
 				message = e.Message;
 			}
 
-			Assert.That(message, Is.EqualTo($"Asserted that {objectName} is useful but it is not"));
+			Assert.That(message, Is.EqualTo($"Required that {objectName} is useful but it is not"));
 		}
 
 		[Test]
