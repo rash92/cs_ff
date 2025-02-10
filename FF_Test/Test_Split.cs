@@ -36,12 +36,10 @@ public class SplitIntegerCollection
 		var splitEvenList = splitEven.ToList();
 		var splitNotEvenList = splitNotEven.ToList();
 
-		var count = whereEvenList.Count;
-		
-		Assert.That(count == splitEvenList.Count);
-		Assert.That(count == whereEvenList.Count);
-		Assert.That(count == splitNotEvenList.Count);
-		Assert.That(count == whereNotEvenList.Count);
+		var count = FF.RequireCommonValue(splitEvenList.Count,
+		                                  splitNotEvenList.Count,
+		                                  whereEvenList.Count,
+		                                  whereNotEvenList.Count);
 
 		for (var i = 0; i < count; i++)
 		{
