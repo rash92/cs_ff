@@ -1,11 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace snns;
 
-public class InvariantException : Exception
+public class RequirementException : Exception
+{
+	public RequirementException()
+	{
+	}
+
+	public RequirementException(string message) : base(message)
+	{
+	}
+
+	public RequirementException(string message, Exception inner) : base(message, inner)
+	{
+	}
+}
+
+public class InvariantException : RequirementException
 {
 	// ReSharper disable once ConvertToPrimaryConstructor
 	public InvariantException(Reason reason)
