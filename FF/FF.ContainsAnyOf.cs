@@ -16,10 +16,16 @@ public static partial class FF
 		if (outer == null) return false;
 		if (inner == null) return false;
 
-		foreach(var o in outer)
-			foreach(var i in inner)
+		foreach (var o in outer)
+		{
+			foreach (var i in inner)
+			{
 				if (o?.Equals(i) == true)
+				{
 					return true;
+				}
+			}
+		}
 		return false;
 	}
 }
