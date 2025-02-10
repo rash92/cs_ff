@@ -36,7 +36,6 @@ namespace Test_ContainsAnyOf;
 
 public class DoesNotThrowForIntCollectionsWhen
 {
-
 	[Test]
 	public void InnerIsNull()
 	{
@@ -44,6 +43,7 @@ public class DoesNotThrowForIntCollectionsWhen
 		List<int>? inner = null;
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void OuterIsNull()
 	{
@@ -51,6 +51,7 @@ public class DoesNotThrowForIntCollectionsWhen
 		var inner = new List<int> { 1, 2, 2, 0, 3, -4 };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void OuterAndInnerAreNull()
 	{
@@ -58,6 +59,7 @@ public class DoesNotThrowForIntCollectionsWhen
 		List<int>? inner = null;
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void InnerContainsNull()
 	{
@@ -65,6 +67,7 @@ public class DoesNotThrowForIntCollectionsWhen
 		var inner = new List<int?> { null, 2, 3, 4, 0, -5, 5, -6 };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void OuterContainsNull()
 	{
@@ -72,6 +75,7 @@ public class DoesNotThrowForIntCollectionsWhen
 		var inner = new List<int?> { 1, 2, 3, -4, 5, 0, 5, 6 };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void InnerAndOuterBothContainNull()
 	{
@@ -79,6 +83,7 @@ public class DoesNotThrowForIntCollectionsWhen
 		var inner = new List<int?> { 1, 2, 3, null, 5, 6 };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void InnerIsEmpty()
 	{
@@ -86,6 +91,7 @@ public class DoesNotThrowForIntCollectionsWhen
 		var inner = new List<int?> { };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void OuterIsEmpty()
 	{
@@ -93,6 +99,7 @@ public class DoesNotThrowForIntCollectionsWhen
 		var inner = new List<int?> { 1, 2, 3, 4, 5, 6, -3, -3, 0 };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void InnerAndOuterBothAreEmpty()
 	{
@@ -100,6 +107,7 @@ public class DoesNotThrowForIntCollectionsWhen
 		var inner = new List<int?> { };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void NoElementsInCommon()
 	{
@@ -118,6 +126,7 @@ public class DoesNotThrowWhenForStrings
 		List<string>? inner = null;
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void OuterIsNull()
 	{
@@ -125,6 +134,7 @@ public class DoesNotThrowWhenForStrings
 		var inner = new List<string> { "1", "a", "3", "4", "", "", "ba", "{" };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void OuterAndInnerAreNull()
 	{
@@ -132,6 +142,7 @@ public class DoesNotThrowWhenForStrings
 		List<string>? inner = null;
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void InnerContainsNull()
 	{
@@ -139,6 +150,7 @@ public class DoesNotThrowWhenForStrings
 		var inner = new List<string?> { "1", "a", null, "4", "", "", "ba", "{" };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void OuterContainsNull()
 	{
@@ -146,6 +158,7 @@ public class DoesNotThrowWhenForStrings
 		var inner = new List<string?> { "1", "a", "4", "", "", "ba", "{" };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void InnerAndOuterBothContainNull()
 	{
@@ -153,6 +166,7 @@ public class DoesNotThrowWhenForStrings
 		var inner = new List<string?> { "1", "a", "4", "", "", null, "{" };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void InnerIsEmpty()
 	{
@@ -160,6 +174,7 @@ public class DoesNotThrowWhenForStrings
 		var inner = new List<string?> { };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void OuterIsEmpty()
 	{
@@ -167,6 +182,7 @@ public class DoesNotThrowWhenForStrings
 		var inner = new List<string?> { "1", "a", null, "4", "", "", "{" };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void InnerAndOuterBothAreEmpty()
 	{
@@ -174,6 +190,7 @@ public class DoesNotThrowWhenForStrings
 		var inner = new List<string?> { };
 		Assert.DoesNotThrow(() => FF.ContainsAnyOf(outer, inner));
 	}
+
 	[Test]
 	public void NoElementsInCommon()
 	{
