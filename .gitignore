@@ -16,6 +16,7 @@
 !README.md
 
 ## Build system
+!snns.sln
 !dotnet.sln
 !build_test.ps1
 !build_package.ps1

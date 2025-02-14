@@ -14,7 +14,7 @@ public static partial class FF
 
 	NAMING CONVENTIONS
 
-	-	void RequireFactAbout(object o)
+	-	T/void RequireFactAbout(object o)
 		-	throws unless the fact is true
 
 	-	bool FactAbout(object o)
@@ -30,8 +30,7 @@ public static partial class FF
 
 	FF introduces the concepts "Useful" and "Useless"
 	-	An object o is useful iff it is not useless
-	-	An object o is useless if it resembles the result of deserializing pure
-		whitespace:
+	-	An object o is useless:
 		-	if o is null
 		-	if o is a string && string.IsNullOrWhitespace(o)
 		-	if o is a collection with no useful items in it

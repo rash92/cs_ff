@@ -7,7 +7,6 @@
 		<AssemblyName>snns.ff</AssemblyName>
 		<RootNamespace>snns</RootNamespace>
 
-		<PackageId>snns_ff</PackageId>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Authors>SRNissen</Authors>
 		<Company>Unaffiliated</Company>
