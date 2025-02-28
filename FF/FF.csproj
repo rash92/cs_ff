@@ -8,8 +8,12 @@
 		<RootNamespace>snns</RootNamespace>
 
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<Authors>SRNissen</Authors>
+		<Authors>SRNissen, rash92</Authors>
 		<Company>Unaffiliated</Company>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Version>0.1.1</Version>
+		<RepositoryUrl>github.com/srnissen/cs_ff</RepositoryUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -24,6 +28,12 @@
 
 	<ItemGroup>
 		<None Include="../README.md" Pack="true" PackagePath="\"/>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="..\LICENSE">
+	    <Link>LICENSE</Link>
+	  </Content>
 	</ItemGroup>
 
 </Project>
