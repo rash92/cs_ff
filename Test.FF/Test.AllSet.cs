@@ -45,6 +45,54 @@ public class AllSet
 		Assert.That(FF.AllSet("1", "2", "3", "4", "5", "6", null, "8", "9"), Is.False);
 		Assert.That(FF.AllSet("1", "2", "3", "4", "5", "6", "7", null, "9"), Is.False);
 		Assert.That(FF.AllSet("1", "2", "3", "4", "5", "6", "7", "8", null), Is.False);
+	}
+}
 
+public class AnyNull
+{
+	[Test]
+	public void DefaultTest()
+	{
+		Assert.That(FF.AnyNull(null));
+		Assert.That(FF.AnyNull(null,null));
+		Assert.That(FF.AnyNull(null,null,null));
+		Assert.That(FF.AnyNull(null,null,null,null));
+		Assert.That(FF.AnyNull(null,null,null,null,null));
+		Assert.That(FF.AnyNull(null,null,null,null,null,null));
+		Assert.That(FF.AnyNull(null,null,null,null,null,null,null));
+		Assert.That(FF.AnyNull(null,null,null,null,null,null,null,null));
+		Assert.That(FF.AnyNull(null,null,null,null,null,null,null,null,null));
+		Assert.That(FF.AnyNull(null,null,null,null,null,null,null,null,null,null));
+		
+		Assert.That(!FF.AnyNull(""));
+		Assert.That(!FF.AnyNull("",""));
+		Assert.That(!FF.AnyNull("","",""));
+		Assert.That(!FF.AnyNull("","","",""));
+		Assert.That(!FF.AnyNull("","","","",""));
+		Assert.That(!FF.AnyNull("","","","","",""));
+		Assert.That(!FF.AnyNull("","","","","","",""));
+		Assert.That(!FF.AnyNull("","","","","","","",""));
+		Assert.That(!FF.AnyNull("","","","","","","","",""));
+		Assert.That(!FF.AnyNull("","","","","","","","","",""));
+		
+		Assert.That(FF.AnyNull(null,""));
+		Assert.That(FF.AnyNull(null,"",""));
+		Assert.That(FF.AnyNull(null,"","",""));
+		Assert.That(FF.AnyNull(null,"","","",""));
+		Assert.That(FF.AnyNull(null,"","","","",""));
+		Assert.That(FF.AnyNull(null,"","","","","",""));
+		Assert.That(FF.AnyNull(null,"","","","","","",""));
+		Assert.That(FF.AnyNull(null,"","","","","","","",""));
+		Assert.That(FF.AnyNull(null,"","","","","","","","",""));
+		
+		Assert.That(FF.AnyNull("",null));
+		Assert.That(FF.AnyNull("","",null));
+		Assert.That(FF.AnyNull("","","",null));
+		Assert.That(FF.AnyNull("","","","",null));
+		Assert.That(FF.AnyNull("","","","","",null));
+		Assert.That(FF.AnyNull("","","","","","",null));
+		Assert.That(FF.AnyNull("","","","","","","",null));
+		Assert.That(FF.AnyNull("","","","","","","","",null));
+		Assert.That(FF.AnyNull("","","","","","","","","",null));
 	}
 }
