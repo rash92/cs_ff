@@ -1,7 +1,7 @@
 using System.Linq;
 using snns;
 
-namespace Test_AssertNullInvariants
+namespace Test_OnlyNullablesAreNull
 {
 public class RecursionAndEnumeration
 {

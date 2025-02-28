@@ -14,16 +14,18 @@ public static partial class FF
 	public static bool ContainsAnyOf<T>(IReadOnlyCollection<T>? outer, IReadOnlyCollection<T>? inner)
 	{
 		if (outer == null) return false;
+		if (outer.Count == 0) return false;
 		if (inner == null) return false;
+		if (inner.Count == 0) return false;
 
 		foreach (var o in outer)
 		{
 			foreach (var i in inner)
 			{
-				if (o?.Equals(i) == true)
-				{
-					return true;
-				}
+				if (o is null && i is null) return true;
+				if (o is null) continue;
+				if (i is null) continue;
+				if (o.Equals(i)) return true;
 			}
 		}
 

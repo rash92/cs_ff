@@ -4,6 +4,8 @@
 
 This project introduces `static class FF` to the namespace `snns`.
 
+<!--
+
 `FF` provides methods to solve recurring DRY problems.
 
 The pitch: You can replace this:
@@ -59,3 +61,5 @@ In no particular order:
   - Change naming pattern to make it more clear how a method works
     - Does it throw? Return null? Return false?
   - Add extension method equivalents for single-argument methods.
+
+-->

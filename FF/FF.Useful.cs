@@ -15,9 +15,9 @@ public static partial class FF
 		throw ex;
 	}
 
-	public static bool IsUseful([NotNullWhen(true)] object? obj)
+	public static bool IsUseful([NotNullWhen(true)] object? input)
 	{
-		return obj switch
+		return input switch
 		{
 			null => false,
 			string str => IsUseful(str),

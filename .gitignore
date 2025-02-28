@@ -17,13 +17,9 @@
 
 ## Build system
 !snns.sln
-!dotnet.sln
-!build_test.ps1
-!build_package.ps1
-!build_release.ps1
 
 ## The FF source
 !/FF/
 !/FF/*
-!/FF_Test/
-!/FF_Test/*
+!/Test.FF/
+!/Test.FF/*

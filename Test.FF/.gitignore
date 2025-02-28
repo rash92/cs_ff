@@ -2,5 +2,5 @@
 !.gitignore
 !.editorconfig
 
-!FF_Test.csproj
+!Test.FF.csproj
 !*.cs
