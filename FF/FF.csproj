@@ -12,7 +12,7 @@
 		<Company>Unaffiliated</Company>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Version>0.1.1</Version>
-		<RepositoryUrl>github.com/srnissen/cs_ff</RepositoryUrl>
+		<RepositoryUrl>https://github.com/srnissen/cs_ff</RepositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
 
