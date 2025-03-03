@@ -24,14 +24,24 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0 # Get all history to allow automatic versioning using MinVer
+        fetch-depth: 0 # Get all history to allow automatic versioning using GitVersion
 
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@3.1.11
+      with:
+        versionSpec: '6.0.0'
+
+    - name: use GitVersion
+      uses: gittools/actions/gitversion/execute@v3.1.11
+
+    
     - run: dotnet test --configuration Release
-    # Create the NuGet package in the folder from the environment variable NuGetDirectory
+    # Create the NuGet package in the folder from the environment variable NuGetDirectory, 
+    # using the dll output from the test step above
     - run: dotnet pack --configuration Release --output ${{ env.NuGetDirectory }}
 
     # Publish the NuGet package as an artifact, so they can be used in the following jobs
