@@ -62,4 +62,9 @@ In no particular order:
     - Does it throw? Return null? Return false?
   - Add extension method equivalents for single-argument methods.
 
+
+Rash notes:
+take in user input of entire semVer, automatically build pacakge with that semver using github actions.
+
+maybe bash/ powershell script, or stuff in github actions itself activated on uploading a tag/ commit message?
 -->

@@ -39,6 +39,12 @@ jobs:
     - name: Use GitVersion
       uses: gittools/actions/gitversion/execute@v3.1.11
 
+
+
+    # something where version number is passed in, set that for future build steps and in final package. 
+    # somewhere earlier, try to either retrieve old semVer number and increment,
+    # or ask for user input (e.g. tag update with semVer or in commit message)
+
     # Run dotnet tests and output dll in default location
     - run: dotnet test --configuration Release
     # Create the NuGet package in the folder from the environment variable NuGetDirectory, 
