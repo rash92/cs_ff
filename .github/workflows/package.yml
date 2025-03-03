@@ -38,7 +38,7 @@ jobs:
     - name: Use GitVersion
       uses: gittools/actions/gitversion/execute@v3.1.11
 
-    # Run tests
+    # Run dotnet tests
     - run: dotnet test --configuration Release
     # Create the NuGet package in the folder from the environment variable NuGetDirectory, 
     # using the dll output from the test step above
