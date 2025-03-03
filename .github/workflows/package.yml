@@ -35,9 +35,7 @@ jobs:
       with:
         versionSpec: '6.0.0'
     
-    # show giversion config
-    - run: gitversion /showConfig
-    
+
     - name: Use GitVersion
       uses: gittools/actions/gitversion/execute@v3.1.11
 
