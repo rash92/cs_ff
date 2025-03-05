@@ -25,16 +25,18 @@ jobs:
   create_nuget:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: checkout and delete tag
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0 # Get all history to allow automatic versioning using GitVersion
+    - run: git push -d origin ${{env.PushedTag}}
 
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
-    - name: delete current tag
-      run: git tag -d ${{env.PushedTag}}
+    # - name: delete current tag
+    #   run: git tag -d ${{env.PushedTag}}
 
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v3.1.11
