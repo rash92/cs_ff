@@ -32,6 +32,9 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
+    - name: Get current tag name
+      run: echo ${{ github.ref_name}}
+
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v3.1.11
       with:
