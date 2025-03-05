@@ -67,4 +67,6 @@ Rash notes:
 take in user input of entire semVer, automatically build pacakge with that semver using github actions.
 
 maybe bash/ powershell script, or stuff in github actions itself activated on uploading a tag/ commit message?
+
+figure out a way to check existing tags and compare against pushed tag, abort build if pushed tag is older than highest existing tag
 -->
