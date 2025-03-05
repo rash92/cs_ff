@@ -14,6 +14,7 @@ on:
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
+  PushedTag: ${{ github.ref_name}}
   NuGetDirectory: ${{ github.workspace}}/nuget
 
 defaults:
@@ -32,8 +33,8 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Get current tag name
-      run: echo ${{ github.ref_name}}
+    - name: delete current tag
+      run: git tag -d ${{env.PushedTag}}
 
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v3.1.11
