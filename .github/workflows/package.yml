@@ -14,7 +14,7 @@ on:
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
   DOTNET_NOLOGO: true
-  PushedTag: ${{ github.ref_name}}
+  PushedTag: ${{ github.ref_name}} # save the pushed tag for later use after deleting them AS tags
   NuGetDirectory: ${{ github.workspace}}/nuget
 
 defaults:
@@ -29,14 +29,14 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0 # Get all history to allow automatic versioning using GitVersion
-    - run: git push -d origin ${{env.PushedTag}} #delete pushed tag from github
+     #delete pushed tag from github, in case we don't actually want the tag there
 
 
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
-    - name: delete 'local' (i.e. within virtual machine) tags and then remake pushed tag
+    - name: delete all 'local' (i.e. within virtual machine) tags and then remake pushed tag so it's the one used for semver
       run: |
        git tag -l | xargs git tag -d
        git tag ${{env.PushedTag}}
