@@ -25,11 +25,12 @@ jobs:
   create_nuget:
     runs-on: ubuntu-latest
     steps:
-    - name: checkout and delete tag
+    - name: checkout and delete existing tags on github, then create local tag for use by gitversion
       uses: actions/checkout@v4
       with:
         fetch-depth: 0 # Get all history to allow automatic versioning using GitVersion
     - run: git push -d origin ${{env.PushedTag}}
+    - run: git tag ${{env.PushedTag}}
 
     - uses: actions/setup-dotnet@v4
       with:
