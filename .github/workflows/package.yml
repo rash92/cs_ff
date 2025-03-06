@@ -32,7 +32,7 @@ jobs:
        if [[ $(git tag | sort -r --version-sort | head -n1) != ${{env.PushedTag}} ]]; then echo pushed tag is lower than existing tags, aborting... && git push -d origin ${{env.PushedTag}} && exit 1; else echo continue with package build; fi
 
     - name: trying to deliberately fail
-      run: if [[ "a" == "a"]]; then exit 1; else echo huh; fi
+      run: if [[ "a" == "a" ]]; then exit 1; else echo huh; fi
     
     - uses: actions/setup-dotnet@v4
       with:
