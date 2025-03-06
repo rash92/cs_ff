@@ -30,8 +30,7 @@ jobs:
       run: |
        echo ${{env.PushedTag}}
        git tag | sort -r --version-sort | head -n1 | echo
-       if [[ $(git tag | sort -r --version-sort | head -n1) != ${{env.PushedTag}} ]]; then git push -d origin ${{env.PushedTag}} && exit 1; fi
-    # - run: git push -d origin ${{env.PushedTag}} #delete pushed tag from github as cleanup, in case we don't actually want the tag there. Can delete this line if we want to keep them.
+       if [[ $(git tag | sort -r --version-sort | head -n1) != ${{env.PushedTag}} ]]; then git push -d origin ${{env.PushedTag}} && echo abort; else echo continue with package build; fi
 
 
     - uses: actions/setup-dotnet@v4
