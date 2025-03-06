@@ -14,7 +14,7 @@ env:
 
 defaults:
   run:
-    shell: bash
+    shell: bash # changed to bash to get it working, could change to powershell again but might need to fix syntax
 
 jobs:
   create_nuget:
@@ -25,24 +25,21 @@ jobs:
       with:
         fetch-depth: 0 # Get all history to allow automatic versioning using GitVersion
     
-    
-    - name: find highest existing tag and check if it's higher than or equal to pushed tag. if not highest tag remove new tag and exit with status 1
-      run: |
-       echo ${{env.PushedTag}}
-       if [[ $(git tag | sort -r --version-sort | head -n1) != ${{env.PushedTag}} ]]; then echo pushed tag is lower than existing tags, aborting... && git push -d origin ${{env.PushedTag}} && exit 1; else echo continue with package build; fi
+    #find highest existing tag and check if it's higher than or equal to pushed tag. 
+    #if not highest tag remove new tag and exit with status 1. one issue is it might rebuild if it's same tag is pushed twice but github should stop that
+    - name: abort if pushed tag is lower than highest existing tag
+      run: if [[ $(git tag | sort -r --version-sort | head -n1) != ${{env.PushedTag}} ]]; then echo pushed tag is lower than existing tags, aborting... && git push -d origin ${{env.PushedTag}} && exit 1; else echo continue with package build; fi
 
-    - name: trying to deliberately fail
-      run: if [[ "a" == "a" ]]; then echo exiting && exit 1; else echo huh; fi
-    
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
     # deletes all tags within virtual machine then remakes pushed tag for use by gitversion
-    - name: reset tags
-      run: |
-       git tag -l | xargs git tag -d
-       git tag ${{env.PushedTag}}
+    # unnecessary with new behaviour, this is if we want to build with lower tags than highest existing
+    # - name: reset tags
+    #   run: |
+    #    git tag -l | xargs git tag -d
+    #    git tag ${{env.PushedTag}}
 
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v3.1.11
