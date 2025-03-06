@@ -29,9 +29,11 @@ jobs:
     - name: find highest existing tag and check if it's higher than or equal to pushed tag. if not highest tag remove new tag and exit with status 1
       run: |
        echo ${{env.PushedTag}}
-       if [[ $(git tag | sort -r --version-sort | head -n1) != ${{env.PushedTag}} ]]; then echo pushed tag is lower than existing tags, aborting... && git push -d origin ${{env.PushedTag}} && exit ; else echo continue with package build; fi
+       if [[ $(git tag | sort -r --version-sort | head -n1) != ${{env.PushedTag}} ]]; then echo pushed tag is lower than existing tags, aborting... && git push -d origin ${{env.PushedTag}} && exit 1; else echo continue with package build; fi
 
-
+    - name: trying to deliberately fail
+      run: exit 1
+    
     - uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
