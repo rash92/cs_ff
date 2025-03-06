@@ -26,9 +26,11 @@ jobs:
         fetch-depth: 0 # Get all history to allow automatic versioning using GitVersion
     
     
-    - name: find highest existing tag
+    - name: find highest existing tag and check if it's higher than or equal to pushed tag
       run: |
+       echo ${{env.PushedTag}}
        git tag | sort -r --version-sort | head -n1 | echo
+       git tag | sort -r --version-sort | head -n1 | -gte ${{env.PushedTag}}
     # - run: git push -d origin ${{env.PushedTag}} #delete pushed tag from github as cleanup, in case we don't actually want the tag there. Can delete this line if we want to keep them.
 
 
