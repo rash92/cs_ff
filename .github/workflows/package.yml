@@ -1,6 +1,5 @@
 name: package
 on:
-  workflow_dispatch: # Allow running the workflow manually from the GitHub UI
   push:
     tags:   # run workflow on pushing a tag, atm relies on user inputting valid semver, could make it do checks with regex if required.
       - '*'
