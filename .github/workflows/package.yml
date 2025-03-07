@@ -28,7 +28,14 @@ jobs:
     #find highest existing tag and check if it's higher than or equal to pushed tag. 
     #if not highest tag remove new tag and exit with status 1. one issue is it might rebuild if it's same tag is pushed twice but github should stop that
     - name: abort if pushed tag is lower than highest existing tag
-      run: if [[ $(git tag | sort -r --version-sort | head -n1) != ${{env.PushedTag}} ]]; then echo pushed tag is lower than existing tags, aborting... && git push -d origin ${{env.PushedTag}} && exit 1; else echo continue with package build; fi
+      run: |
+        if [[ $(git tag | sort -r --version-sort | head -n1) != ${{env.PushedTag}} ]]; then \
+          echo pushed tag is lower than existing tags, aborting... && \
+          git push -d origin ${{env.PushedTag}} && \
+          exit 1; \
+        else \
+          echo continue with package build; \
+        fi
 
     - uses: actions/setup-dotnet@v4
       with:
@@ -36,10 +43,10 @@ jobs:
 
     # deletes all tags within virtual machine then remakes pushed tag for use by gitversion
     # unnecessary with new behaviour, this is if we want to build with lower tags than highest existing
-    # - name: reset tags
-    #   run: |
-    #    git tag -l | xargs git tag -d
-    #    git tag ${{env.PushedTag}}
+    - name: reset tags
+      run: |
+       git tag -l | xargs git tag -d
+       git tag ${{env.PushedTag}}
 
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v3.1.11
@@ -48,19 +55,18 @@ jobs:
     
 
     - name: Use GitVersion
+      id: gitVersion
       uses: gittools/actions/gitversion/execute@v3.1.11
-
-
-
-    # something where version number is passed in, set that for future build steps and in final package. 
-    # somewhere earlier, try to either retrieve old semVer number and increment,
-    # or ask for user input (e.g. tag update with semVer or in commit message)
 
     # Run dotnet tests and output dll in default location
     - run: dotnet test --configuration Release
     # Create the NuGet package in the folder from the environment variable NuGetDirectory, 
     # using the dll output from the test step above
-    - run: dotnet pack --configuration Release --output ${{ env.NuGetDirectory }}
+    - run: |
+        dotnet pack \
+        --configuration Release \
+        -p:PackageVersion=${{steps.gitVersion.outputs.FullSemVer}} \
+        --output ${{ env.NuGetDirectory }}
 
     # Publish the NuGet package as an artifact, so they can be used in the following jobs
     - uses: actions/upload-artifact@v4
