@@ -3,15 +3,11 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
-
 		<AssemblyName>snns.ff</AssemblyName>
 		<RootNamespace>snns</RootNamespace>
-
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Authors>SRNissen, rash92</Authors>
 		<Company>Unaffiliated</Company>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Version>0.1.1</Version>
 		<RepositoryUrl>https://github.com/srnissen/cs_ff</RepositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
